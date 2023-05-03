@@ -29,7 +29,10 @@ public class User {
     private String name;
     private String lastname;
     private String secondLastName;
+    @Column(nullable = false, unique = true)
     private String email;
+    @Column(nullable = false)
+    private String password;
     private String phone;
     private LocalDate birthDate;
 }
