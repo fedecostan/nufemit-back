@@ -11,7 +11,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Getter
 @Setter
@@ -19,20 +19,17 @@ import java.time.LocalDate;
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
-public class User {
+public class Activity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     @Column(name = "id", nullable = false)
     private Long id;
 
-    private String name;
-    private String lastname;
-    private String secondLastName;
-    @Column(nullable = false, unique = true, length = 50)
-    private String email;
-    @Column(nullable = false)
-    private String password;
-    private String phone;
-    private LocalDate birthDate;
+    private String title;
+    private String description;
+    private String place;
+    private LocalDateTime dateTime;
+    private Integer maxParticipants;
+    private Double price;
 }
