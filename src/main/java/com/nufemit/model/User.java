@@ -22,13 +22,13 @@ import java.time.LocalDate;
 public class User {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
     private Long id;
 
     private String name;
     private String lastname;
-    private String secondLastName;
+    private String secondLastname;
     @Column(nullable = false, unique = true, length = 50)
     private String email;
     @Column(nullable = false)
