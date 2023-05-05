@@ -9,10 +9,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import static com.nufemit.utils.CredentialsUtils.createToken;
@@ -25,6 +28,22 @@ import static com.nufemit.utils.CredentialsUtils.getCredentialsInfo;
 public class ActivityController {
 
     private ActivityService activityService;
+
+    @GetMapping
+    public ResponseEntity<ResponseDTO> getActivity(@RequestHeader(HttpHeaders.AUTHORIZATION) String token,
+                                                   @RequestParam(required = false) String searchBox) {
+        Credentials credentialsInfo = getCredentialsInfo(token);
+        if (!credentialsInfo.isAccess()) return new ResponseEntity<>(null, HttpStatus.UNAUTHORIZED);
+        return createOkResponse(activityService.getActivities(searchBox), credentialsInfo);
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<ResponseDTO> getActivityById(@RequestHeader(HttpHeaders.AUTHORIZATION) String token,
+                                                       @PathVariable Long id) {
+        Credentials credentialsInfo = getCredentialsInfo(token);
+        if (!credentialsInfo.isAccess()) return new ResponseEntity<>(null, HttpStatus.UNAUTHORIZED);
+        return createOkResponse(activityService.getActivitiesById(id), credentialsInfo);
+    }
 
     @PostMapping
     public ResponseEntity<ResponseDTO> create(@RequestHeader(HttpHeaders.AUTHORIZATION) String token,

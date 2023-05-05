@@ -1,5 +1,6 @@
 package com.nufemit.service;
 
+import com.nufemit.exception.AuthenticationException;
 import com.nufemit.model.User;
 import com.nufemit.model.dto.LoginDTO;
 import com.nufemit.model.dto.ResponseDTO;
@@ -23,7 +24,10 @@ public class UserService {
     private UserRepository userRepository;
 
     public List<User> getUsers(String searchBox) {
-        return userRepository.findByNameContainsOrLastnameContainsOrSecondLastNameContainsOrEmailContains(searchBox, searchBox, searchBox, searchBox);
+        if (searchBox == null || searchBox.isBlank()) {
+            return userRepository.findTop25By();
+        }
+        return userRepository.findBySearchBox(searchBox, searchBox, searchBox, searchBox);
     }
 
     public User getUsersById(Long id) {
@@ -41,6 +45,6 @@ public class UserService {
         return userRepository.findByEmailAndPassword(loginDTO.getEmail(), encrypt(loginDTO.getPassword()))
                 .map(user -> createToken(user.getId(), user.getEmail(), user.getPassword()))
                 .map(token -> ResponseDTO.builder().token(token).build())
-                .orElseThrow(EntityNotFoundException::new);
+                .orElseThrow(AuthenticationException::new);
     }
 }
