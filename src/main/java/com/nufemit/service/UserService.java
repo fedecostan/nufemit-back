@@ -9,9 +9,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityNotFoundException;
+import java.util.List;
 
 import static com.nufemit.utils.CredentialsUtils.createToken;
 import static com.nufemit.utils.CredentialsUtils.encrypt;
+import static java.lang.Boolean.TRUE;
 
 @Service
 @AllArgsConstructor
@@ -20,16 +22,25 @@ public class UserService {
 
     private UserRepository userRepository;
 
-    public User createUser(User user) {
+    public List<User> getUsers(String searchBox) {
+        return userRepository.findByNameContainsOrLastnameContainsOrSecondLastNameContainsOrEmailContains(searchBox, searchBox, searchBox, searchBox);
+    }
+
+    public User getUsersById(Long id) {
+        return userRepository.findById(id)
+                .orElseThrow(EntityNotFoundException::new);
+    }
+
+    public Boolean createUser(User user) {
         user.setPassword(encrypt(user.getPassword()));
-        return userRepository.save(user);
+        userRepository.save(user);
+        return TRUE;
     }
 
     public ResponseDTO loginUser(LoginDTO loginDTO) {
         return userRepository.findByEmailAndPassword(loginDTO.getEmail(), encrypt(loginDTO.getPassword()))
-                .map(user -> createToken(user.getEmail(), user.getPassword()))
+                .map(user -> createToken(user.getId(), user.getEmail(), user.getPassword()))
                 .map(token -> ResponseDTO.builder().token(token).build())
                 .orElseThrow(EntityNotFoundException::new);
     }
-
 }
