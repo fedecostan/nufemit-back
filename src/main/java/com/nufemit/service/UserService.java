@@ -40,6 +40,7 @@ public class UserService {
         user.setPassword(encrypt(user.getPassword()));
         try {
             userRepository.save(user);
+            log.info("New USER created: {}", user.getId());
         } catch (Exception e) {
             throw new DuplicateInformationException();
         }
@@ -53,8 +54,9 @@ public class UserService {
             .orElseThrow(AuthenticationException::new);
     }
 
-    public Boolean deleteUser(Long id) {
-        userRepository.deleteById(id);
+    public Boolean deleteUser(User user) {
+        userRepository.deleteById(user.getId());
+        log.info("USER {} deleted", user.getId());
         return TRUE;
     }
 }

@@ -41,7 +41,7 @@ public class RegistrationService {
     }
 
     private Boolean addUserToActivity(Activity activity, User user) {
-        if (activity.getUsers().contains(user)) {
+        if (activity.getParticipants().contains(user)) {
             log.warn("User {} already registered for the activity {}", user.getId(), activity.getId());
             return FALSE;
         }
@@ -57,7 +57,7 @@ public class RegistrationService {
     }
 
     private Boolean removeUserFromActivity(Activity activity, User user) {
-        if (activity.getUsers().contains(user)) {
+        if (activity.getParticipants().contains(user)) {
             activity.removeUser(user);
             activityRepository.save(activity);
             return TRUE;

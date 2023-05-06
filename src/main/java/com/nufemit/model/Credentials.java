@@ -8,9 +8,7 @@ import java.time.LocalDateTime;
 @Data
 @Builder
 public class Credentials {
-    private Long id;
-    private String email;
-    private String password;
+    private User user;
     private LocalDateTime expiration;
     private boolean access;
 }

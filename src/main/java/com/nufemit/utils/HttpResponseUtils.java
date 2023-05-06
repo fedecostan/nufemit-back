@@ -10,10 +10,12 @@ public class HttpResponseUtils {
 
     public static ResponseEntity<ResponseDTO> createOkResponse(Object o, Credentials credentialsInfo) {
         return ResponseEntity.ok(
-                ResponseDTO.builder()
-                        .response(o)
-                        .token(createToken(
-                                credentialsInfo.getId(), credentialsInfo.getEmail(), credentialsInfo.getPassword()))
-                        .build());
+            ResponseDTO.builder()
+                .response(o)
+                .token(createToken(
+                    credentialsInfo.getUser().getId(),
+                    credentialsInfo.getUser().getEmail(),
+                    credentialsInfo.getUser().getPassword()))
+                .build());
     }
 }

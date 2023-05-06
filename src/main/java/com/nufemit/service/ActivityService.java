@@ -1,6 +1,7 @@
 package com.nufemit.service;
 
 import com.nufemit.model.Activity;
+import com.nufemit.model.User;
 import com.nufemit.repository.ActivityRepository;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -19,8 +20,10 @@ public class ActivityService {
 
     private ActivityRepository activityRepository;
 
-    public Boolean createActivity(Activity activity) {
-        activityRepository.save(activity);
+    public Boolean createActivity(Activity activity, User user) {
+        activity.setCreator(user);
+        Activity newActivity = activityRepository.save(activity);
+        log.info("New ACTIVITY created: {}", newActivity.getId());
         return TRUE;
     }
 
@@ -34,5 +37,17 @@ public class ActivityService {
     public Activity getActivitiesById(Long id) {
         return activityRepository.findById(id)
             .orElseThrow(EntityNotFoundException::new);
+    }
+
+    public Boolean deleteActivity(Long id, User user) {
+        return activityRepository.findByIdAndCreatorAndDateTimeGreaterThanEqual(id, user, LocalDateTime.now())
+            .map(this::deleteActivity)
+            .orElseThrow(EntityNotFoundException::new);
+    }
+
+    private Boolean deleteActivity(Activity activity) {
+        activityRepository.delete(activity);
+        log.info("ACTIVITY {} deleted", activity.getId());
+        return TRUE;
     }
 }
