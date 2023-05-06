@@ -2,6 +2,7 @@ package com.nufemit.controller;
 
 import com.nufemit.model.Credentials;
 import com.nufemit.model.dto.RatingDTO;
+import com.nufemit.model.dto.ResponseDTO;
 import com.nufemit.service.AuthenticationService;
 import com.nufemit.service.RatingService;
 import lombok.AllArgsConstructor;
@@ -17,6 +18,8 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import static com.nufemit.utils.HttpResponseUtils.createOkResponse;
+
 @RestController
 @RequestMapping("/ratings")
 @AllArgsConstructor
@@ -27,18 +30,18 @@ public class RatingController {
     private AuthenticationService authenticationService;
 
     @PostMapping
-    public ResponseEntity<Boolean> create(@RequestHeader(HttpHeaders.AUTHORIZATION) String token,
-                                          @RequestBody RatingDTO ratingDTO) {
+    public ResponseEntity<ResponseDTO> create(@RequestHeader(HttpHeaders.AUTHORIZATION) String token,
+                                              @RequestBody RatingDTO ratingDTO) {
         Credentials credentialsInfo = authenticationService.getCredentials(token);
         if (!credentialsInfo.isAccess()) return new ResponseEntity<>(null, HttpStatus.UNAUTHORIZED);
-        return ResponseEntity.ok(ratingService.createRating(ratingDTO, credentialsInfo.getUser()));
+        return createOkResponse(ratingService.createRating(ratingDTO, credentialsInfo.getUser()), credentialsInfo);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Boolean> delete(@RequestHeader(HttpHeaders.AUTHORIZATION) String token,
-                                          @PathVariable Long id) {
+    public ResponseEntity<ResponseDTO> delete(@RequestHeader(HttpHeaders.AUTHORIZATION) String token,
+                                              @PathVariable Long id) {
         Credentials credentialsInfo = authenticationService.getCredentials(token);
         if (!credentialsInfo.isAccess()) return new ResponseEntity<>(null, HttpStatus.UNAUTHORIZED);
-        return ResponseEntity.ok(ratingService.deleteRating(id, credentialsInfo.getUser()));
+        return createOkResponse(ratingService.deleteRating(id, credentialsInfo.getUser()), credentialsInfo);
     }
 }

@@ -1,6 +1,5 @@
 package com.nufemit.model;
 
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -30,12 +29,10 @@ public class Rating {
 
     @ManyToOne
     @JoinColumn(name = "reviewer", nullable = false)
-    @JsonManagedReference
     private User reviewer;
 
     @ManyToOne
     @JoinColumn(name = "reviewed", nullable = false)
-    @JsonManagedReference
     private User reviewed;
 
     private String comment;

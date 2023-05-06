@@ -20,7 +20,7 @@ import javax.persistence.ManyToOne;
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
-public class Follower {
+public class Conversation {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -28,10 +28,10 @@ public class Follower {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "follower", nullable = false)
-    private User follower;
-
+    @JoinColumn(name = "participant1", nullable = false)
+    private User participant1;
     @ManyToOne
-    @JoinColumn(name = "followed", nullable = false)
-    private User followed;
+    @JoinColumn(name = "participant2", nullable = false)
+    private User participant2;
+
 }
