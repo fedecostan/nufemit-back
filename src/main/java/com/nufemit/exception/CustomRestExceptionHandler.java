@@ -20,4 +20,9 @@ public class CustomRestExceptionHandler extends ResponseEntityExceptionHandler {
     public ResponseEntity<String> handleAuthenticationException() {
         return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
     }
+
+    @ExceptionHandler({DuplicateInformationException.class})
+    public ResponseEntity<String> handleDuplicateInformationException() {
+        return new ResponseEntity<>(HttpStatus.CONFLICT);
+    }
 }
