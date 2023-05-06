@@ -33,4 +33,12 @@ public class RegistrationController {
         if (!credentialsInfo.isAccess()) return new ResponseEntity<>(null, HttpStatus.UNAUTHORIZED);
         return createOkResponse(registrationService.registerUser(activityId, userId), credentialsInfo);
     }
+
+    @PutMapping("/unregister/{activityId}/{userId}")
+    public ResponseEntity<ResponseDTO> unregisterUser(@RequestHeader(HttpHeaders.AUTHORIZATION) String token,
+                                                      @PathVariable Long activityId, @PathVariable Long userId) {
+        Credentials credentialsInfo = authenticationService.getCredentials(token);
+        if (!credentialsInfo.isAccess()) return new ResponseEntity<>(null, HttpStatus.UNAUTHORIZED);
+        return createOkResponse(registrationService.unregisterUser(activityId, userId), credentialsInfo);
+    }
 }

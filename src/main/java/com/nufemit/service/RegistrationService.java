@@ -25,6 +25,12 @@ public class RegistrationService {
             .orElseThrow(EntityNotFoundException::new);
     }
 
+    public Boolean unregisterUser(Long activityId, Long userId) {
+        return activityRepository.findByIdAndDateTimeGreaterThanEqual(activityId, LocalDateTime.now())
+            .map(activity -> fetchUserAndUnregister(activity, userId))
+            .orElseThrow(EntityNotFoundException::new);
+    }
+
     private Boolean fetchUserAndRegister(Activity activity, Long userId) {
         return userRepository.findById(userId)
             .map(user -> addUserToActivity(activity, user))
@@ -39,5 +45,21 @@ public class RegistrationService {
         activity.addUser(user);
         activityRepository.save(activity);
         return Boolean.TRUE;
+    }
+
+    private Boolean fetchUserAndUnregister(Activity activity, Long userId) {
+        return userRepository.findById(userId)
+            .map(user -> removeUserFromActivity(activity, user))
+            .orElseThrow(EntityNotFoundException::new);
+    }
+
+    private Boolean removeUserFromActivity(Activity activity, User user) {
+        if (activity.getUsers().contains(user)) {
+            activity.removeUser(user);
+            activityRepository.save(activity);
+            return Boolean.TRUE;
+        }
+        log.warn("User {} was not registered in the activity {}", user.getId(), activity.getId());
+        return Boolean.FALSE;
     }
 }
