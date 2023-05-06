@@ -25,4 +25,9 @@ public class CustomRestExceptionHandler extends ResponseEntityExceptionHandler {
     public ResponseEntity<String> handleDuplicateInformationException() {
         return new ResponseEntity<>(HttpStatus.CONFLICT);
     }
+
+    @ExceptionHandler({UniqueRatingException.class})
+    public ResponseEntity<String> handleUniqueRatingException() {
+        return new ResponseEntity<>("You can only review the same user once", HttpStatus.PRECONDITION_FAILED);
+    }
 }
