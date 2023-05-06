@@ -11,10 +11,12 @@ public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findByEmailAndPassword(String email, String encryptedPassword);
 
     @Query("SELECT u FROM User u WHERE u.name like CONCAT('%', ?1, '%') or" +
-            " u.lastname like CONCAT('%', ?2, '%') or" +
-            " u.secondLastname like CONCAT('%', ?3, '%') or" +
-            " u.email like CONCAT('%', ?4, '%')")
+        " u.lastname like CONCAT('%', ?2, '%') or" +
+        " u.secondLastname like CONCAT('%', ?3, '%') or" +
+        " u.email like CONCAT('%', ?4, '%')")
     List<User> findBySearchBox(String name, String lastname, String secondLastname, String email);
 
     List<User> findTop25By();
+
+    Optional<User> findByIdAndEmailAndPassword(Long id, String email, String password);
 }

@@ -4,6 +4,7 @@ import com.nufemit.model.Activity;
 import com.nufemit.model.Credentials;
 import com.nufemit.model.dto.ResponseDTO;
 import com.nufemit.service.ActivityService;
+import com.nufemit.service.AuthenticationService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
@@ -18,8 +19,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import static com.nufemit.utils.CredentialsUtils.createToken;
-import static com.nufemit.utils.CredentialsUtils.getCredentialsInfo;
+import static com.nufemit.utils.HttpResponseUtils.createOkResponse;
 
 @RestController
 @RequestMapping("/activities")
@@ -28,11 +28,12 @@ import static com.nufemit.utils.CredentialsUtils.getCredentialsInfo;
 public class ActivityController {
 
     private ActivityService activityService;
+    private AuthenticationService authenticationService;
 
     @GetMapping
     public ResponseEntity<ResponseDTO> getActivity(@RequestHeader(HttpHeaders.AUTHORIZATION) String token,
                                                    @RequestParam(required = false) String searchBox) {
-        Credentials credentialsInfo = getCredentialsInfo(token);
+        Credentials credentialsInfo = authenticationService.getCredentials(token);
         if (!credentialsInfo.isAccess()) return new ResponseEntity<>(null, HttpStatus.UNAUTHORIZED);
         return createOkResponse(activityService.getActivities(searchBox), credentialsInfo);
     }
@@ -40,7 +41,7 @@ public class ActivityController {
     @GetMapping("/{id}")
     public ResponseEntity<ResponseDTO> getActivityById(@RequestHeader(HttpHeaders.AUTHORIZATION) String token,
                                                        @PathVariable Long id) {
-        Credentials credentialsInfo = getCredentialsInfo(token);
+        Credentials credentialsInfo = authenticationService.getCredentials(token);
         if (!credentialsInfo.isAccess()) return new ResponseEntity<>(null, HttpStatus.UNAUTHORIZED);
         return createOkResponse(activityService.getActivitiesById(id), credentialsInfo);
     }
@@ -48,17 +49,8 @@ public class ActivityController {
     @PostMapping
     public ResponseEntity<ResponseDTO> create(@RequestHeader(HttpHeaders.AUTHORIZATION) String token,
                                               @RequestBody Activity activity) {
-        Credentials credentialsInfo = getCredentialsInfo(token);
+        Credentials credentialsInfo = authenticationService.getCredentials(token);
         if (!credentialsInfo.isAccess()) return new ResponseEntity<>(null, HttpStatus.UNAUTHORIZED);
         return createOkResponse(activityService.createActivity(activity), credentialsInfo);
-    }
-
-    private ResponseEntity<ResponseDTO> createOkResponse(Object o, Credentials credentialsInfo) {
-        return ResponseEntity.ok(
-                ResponseDTO.builder()
-                        .response(o)
-                        .token(createToken(
-                                credentialsInfo.getId(), credentialsInfo.getEmail(), credentialsInfo.getPassword()))
-                        .build());
     }
 }
