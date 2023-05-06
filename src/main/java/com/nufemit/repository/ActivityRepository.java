@@ -1,6 +1,7 @@
 package com.nufemit.repository;
 
 import com.nufemit.model.Activity;
+import com.nufemit.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
@@ -18,4 +19,6 @@ public interface ActivityRepository extends JpaRepository<Activity, Long> {
     List<Activity> findTop25ByDateTimeGreaterThanEqualOrderByDateTimeDesc(LocalDateTime now);
 
     Optional<Activity> findByIdAndDateTimeGreaterThanEqual(Long activityId, LocalDateTime now);
+
+    Optional<Activity> findByIdAndCreatorAndDateTimeGreaterThanEqual(Long id, User user, LocalDateTime now);
 }

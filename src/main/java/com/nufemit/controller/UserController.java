@@ -62,6 +62,6 @@ public class UserController {
     public ResponseEntity<ResponseDTO> deleteUser(@RequestHeader(HttpHeaders.AUTHORIZATION) String token) {
         Credentials credentialsInfo = authenticationService.getCredentials(token);
         if (!credentialsInfo.isAccess()) return new ResponseEntity<>(null, HttpStatus.UNAUTHORIZED);
-        return createOkResponse(userService.deleteUser(credentialsInfo.getId()), credentialsInfo);
+        return createOkResponse(userService.deleteUser(credentialsInfo.getUser()), credentialsInfo);
     }
 }

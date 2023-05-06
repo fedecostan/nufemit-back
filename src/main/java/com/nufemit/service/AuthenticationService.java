@@ -35,16 +35,14 @@ public class AuthenticationService {
             Long id = decodedJWT.getClaim(ID).asLong();
             String email = decodedJWT.getClaim(EMAIL).asString();
             String password = decodedJWT.getClaim(PASSWORD).asString();
-            boolean present = userRepository.findByIdAndEmailAndPassword(id, email, password).isPresent();
-            return Credentials.builder()
-                .id(id)
-                .email(email)
-                .password(password)
-                .expiration(expirationDate)
-                .access(present && verifyExpiration(expirationDate))
-                .build();
+            return userRepository.findByIdAndEmailAndPassword(id, email, password)
+                .map(user -> Credentials.builder()
+                    .user(user)
+                    .expiration(expirationDate)
+                    .access(verifyExpiration(expirationDate))
+                    .build())
+                .orElse(Credentials.builder().access(FALSE).build());
         } catch (Exception e) {
-            e.printStackTrace();
             return Credentials.builder().access(FALSE).build();
         }
     }
