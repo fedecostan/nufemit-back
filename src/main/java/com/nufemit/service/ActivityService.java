@@ -33,6 +33,6 @@ public class ActivityService {
 
     public Activity getActivitiesById(Long id) {
         return activityRepository.findById(id)
-                .orElseThrow(EntityNotFoundException::new);
+            .orElseThrow(EntityNotFoundException::new);
     }
 }

@@ -4,6 +4,7 @@ import com.nufemit.model.Credentials;
 import com.nufemit.model.User;
 import com.nufemit.model.dto.LoginDTO;
 import com.nufemit.model.dto.ResponseDTO;
+import com.nufemit.service.AuthenticationService;
 import com.nufemit.service.UserService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -19,8 +20,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import static com.nufemit.utils.CredentialsUtils.createToken;
-import static com.nufemit.utils.CredentialsUtils.getCredentialsInfo;
+import static com.nufemit.utils.HttpResponseUtils.createOkResponse;
 
 @RestController
 @RequestMapping("/users")
@@ -29,11 +29,12 @@ import static com.nufemit.utils.CredentialsUtils.getCredentialsInfo;
 public class UserController {
 
     private UserService userService;
+    private AuthenticationService authenticationService;
 
     @GetMapping
     public ResponseEntity<ResponseDTO> getUser(@RequestHeader(HttpHeaders.AUTHORIZATION) String token,
                                                @RequestParam(required = false) String searchBox) {
-        Credentials credentialsInfo = getCredentialsInfo(token);
+        Credentials credentialsInfo = authenticationService.getCredentials(token);
         if (!credentialsInfo.isAccess()) return new ResponseEntity<>(null, HttpStatus.UNAUTHORIZED);
         return createOkResponse(userService.getUsers(searchBox), credentialsInfo);
     }
@@ -41,7 +42,7 @@ public class UserController {
     @GetMapping("/{id}")
     public ResponseEntity<ResponseDTO> getUserById(@RequestHeader(HttpHeaders.AUTHORIZATION) String token,
                                                    @PathVariable Long id) {
-        Credentials credentialsInfo = getCredentialsInfo(token);
+        Credentials credentialsInfo = authenticationService.getCredentials(token);
         if (!credentialsInfo.isAccess()) return new ResponseEntity<>(null, HttpStatus.UNAUTHORIZED);
         return createOkResponse(userService.getUsersById(id), credentialsInfo);
     }
@@ -55,14 +56,4 @@ public class UserController {
     public ResponseEntity<ResponseDTO> login(@RequestBody LoginDTO loginDTO) {
         return ResponseEntity.ok(userService.loginUser(loginDTO));
     }
-
-    private ResponseEntity<ResponseDTO> createOkResponse(Object o, Credentials credentialsInfo) {
-        return ResponseEntity.ok(
-                ResponseDTO.builder()
-                        .response(o)
-                        .token(createToken(
-                                credentialsInfo.getId(), credentialsInfo.getEmail(), credentialsInfo.getPassword()))
-                        .build());
-    }
-
 }

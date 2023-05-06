@@ -1,10 +1,7 @@
 package com.nufemit.utils;
 
 import com.auth0.jwt.JWT;
-import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
-import com.auth0.jwt.interfaces.DecodedJWT;
-import com.nufemit.model.Credentials;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -16,18 +13,16 @@ import java.security.NoSuchAlgorithmException;
 import java.time.LocalDateTime;
 import java.util.Map;
 
-import static java.lang.Boolean.FALSE;
-
 @Component
 @AllArgsConstructor
 @Slf4j
 public class CredentialsUtils {
 
-    private static final String TOKEN_SECRET = "s3Cr3T";
-    private static final String ID = "id";
-    private static final String EMAIL = "email";
-    private static final String PASSWORD = "password";
-    private static final String EXPIRATION = "expiration";
+    public static final String TOKEN_SECRET = "s3Cr3T";
+    public static final String ID = "id";
+    public static final String EMAIL = "email";
+    public static final String PASSWORD = "password";
+    public static final String EXPIRATION = "expiration";
 
     public static String encrypt(String password) {
         try {
@@ -40,35 +35,12 @@ public class CredentialsUtils {
     public static String createToken(Long id, String email, String password) {
         System.out.println(LocalDateTime.now().plusHours(1));
         return JWT.create()
-                .withHeader(Map.of("typ", "JWT", "alg", "HS256"))
-                .withClaim(ID, id)
-                .withClaim(EMAIL, email)
-                .withClaim(PASSWORD, password)
-                .withClaim(EXPIRATION, LocalDateTime.now().plusHours(1).toString())
-                .sign(Algorithm.HMAC256(TOKEN_SECRET));
-    }
-
-    public static Credentials getCredentialsInfo(String token) {
-        try {
-            Algorithm algorithm = Algorithm.HMAC256(TOKEN_SECRET);
-            JWTVerifier jwtVerifier = JWT.require(algorithm).build();
-            DecodedJWT decodedJWT = jwtVerifier.verify(token);
-            LocalDateTime expirationDate = LocalDateTime.parse(decodedJWT.getClaim(EXPIRATION).asString());
-            return Credentials.builder()
-                    .id(decodedJWT.getClaim(ID).asLong())
-                    .email(decodedJWT.getClaim(EMAIL).asString())
-                    .password(decodedJWT.getClaim(PASSWORD).asString())
-                    .expiration(expirationDate)
-                    .access(verifyExpiration(expirationDate))
-                    .build();
-        } catch (Exception e) {
-            e.printStackTrace();
-            return Credentials.builder().access(FALSE).build();
-        }
-    }
-
-    private static boolean verifyExpiration(LocalDateTime expiration) {
-        return expiration.isAfter(LocalDateTime.now());
+            .withHeader(Map.of("typ", "JWT", "alg", "HS256"))
+            .withClaim(ID, id)
+            .withClaim(EMAIL, email)
+            .withClaim(PASSWORD, password)
+            .withClaim(EXPIRATION, LocalDateTime.now().plusHours(1).toString())
+            .sign(Algorithm.HMAC256(TOKEN_SECRET));
     }
 
     private static byte[] getSHA(String input) throws NoSuchAlgorithmException {
