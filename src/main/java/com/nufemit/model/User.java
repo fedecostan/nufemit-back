@@ -1,7 +1,8 @@
 package com.nufemit.model;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -10,7 +11,6 @@ import lombok.Setter;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -26,6 +26,7 @@ import java.util.List;
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
 public class User {
 
     @Id
@@ -38,15 +39,15 @@ public class User {
     private String secondLastname;
     @Column(nullable = false, unique = true, length = 50)
     private String email;
-    @ManyToMany(fetch = FetchType.LAZY, mappedBy = "participants")
-    @JsonBackReference
+    @ManyToMany(mappedBy = "participants")
+    @JsonIgnore
     public List<Activity> activitiesJoined = new ArrayList<>();
     private String phone;
     private LocalDate birthDate;
     @Column(nullable = false)
     @JsonIgnore
     private String password;
-    @OneToMany(fetch = FetchType.LAZY, mappedBy = "creator")
-    @JsonBackReference
+    @OneToMany(mappedBy = "creator")
+    @JsonIgnore
     private List<Activity> activitiesCreated;
 }
