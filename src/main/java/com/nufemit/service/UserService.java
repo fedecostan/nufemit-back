@@ -1,6 +1,7 @@
 package com.nufemit.service;
 
 import com.nufemit.exception.AuthenticationException;
+import com.nufemit.exception.DuplicateInformationException;
 import com.nufemit.model.User;
 import com.nufemit.model.dto.LoginDTO;
 import com.nufemit.model.dto.ResponseDTO;
@@ -37,14 +38,23 @@ public class UserService {
 
     public Boolean createUser(User user) {
         user.setPassword(encrypt(user.getPassword()));
-        userRepository.save(user);
+        try {
+            userRepository.save(user);
+        } catch (Exception e) {
+            throw new DuplicateInformationException();
+        }
         return TRUE;
     }
 
     public ResponseDTO loginUser(LoginDTO loginDTO) {
         return userRepository.findByEmailAndPassword(loginDTO.getEmail(), encrypt(loginDTO.getPassword()))
-                .map(user -> createToken(user.getId(), user.getEmail(), user.getPassword()))
-                .map(token -> ResponseDTO.builder().token(token).build())
-                .orElseThrow(AuthenticationException::new);
+            .map(user -> createToken(user.getId(), user.getEmail(), user.getPassword()))
+            .map(token -> ResponseDTO.builder().token(token).build())
+            .orElseThrow(AuthenticationException::new);
+    }
+
+    public Boolean deleteUser(Long id) {
+        userRepository.deleteById(id);
+        return TRUE;
     }
 }

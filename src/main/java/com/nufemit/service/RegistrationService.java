@@ -11,6 +11,9 @@ import org.springframework.stereotype.Service;
 import javax.persistence.EntityNotFoundException;
 import java.time.LocalDateTime;
 
+import static java.lang.Boolean.FALSE;
+import static java.lang.Boolean.TRUE;
+
 @Service
 @AllArgsConstructor
 @Slf4j
@@ -40,11 +43,11 @@ public class RegistrationService {
     private Boolean addUserToActivity(Activity activity, User user) {
         if (activity.getUsers().contains(user)) {
             log.warn("User {} already registered for the activity {}", user.getId(), activity.getId());
-            return Boolean.FALSE;
+            return FALSE;
         }
         activity.addUser(user);
         activityRepository.save(activity);
-        return Boolean.TRUE;
+        return TRUE;
     }
 
     private Boolean fetchUserAndUnregister(Activity activity, Long userId) {
@@ -57,9 +60,9 @@ public class RegistrationService {
         if (activity.getUsers().contains(user)) {
             activity.removeUser(user);
             activityRepository.save(activity);
-            return Boolean.TRUE;
+            return TRUE;
         }
         log.warn("User {} was not registered in the activity {}", user.getId(), activity.getId());
-        return Boolean.FALSE;
+        return FALSE;
     }
 }
