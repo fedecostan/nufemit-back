@@ -1,7 +1,7 @@
 package com.nufemit.controller;
 
 import com.nufemit.model.Credentials;
-import com.nufemit.model.Rating;
+import com.nufemit.model.dto.RatingDTO;
 import com.nufemit.service.AuthenticationService;
 import com.nufemit.service.RatingService;
 import lombok.AllArgsConstructor;
@@ -28,10 +28,10 @@ public class RatingController {
 
     @PostMapping
     public ResponseEntity<Boolean> create(@RequestHeader(HttpHeaders.AUTHORIZATION) String token,
-                                          @RequestBody Rating rating) {
+                                          @RequestBody RatingDTO ratingDTO) {
         Credentials credentialsInfo = authenticationService.getCredentials(token);
         if (!credentialsInfo.isAccess()) return new ResponseEntity<>(null, HttpStatus.UNAUTHORIZED);
-        return ResponseEntity.ok(ratingService.createRating(rating, credentialsInfo.getUser()));
+        return ResponseEntity.ok(ratingService.createRating(ratingDTO, credentialsInfo.getUser()));
     }
 
     @DeleteMapping("/{id}")

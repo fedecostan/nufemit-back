@@ -2,11 +2,13 @@ package com.nufemit.service;
 
 import com.nufemit.exception.AuthenticationException;
 import com.nufemit.exception.DuplicateInformationException;
+import com.nufemit.model.Follower;
 import com.nufemit.model.Rating;
 import com.nufemit.model.User;
 import com.nufemit.model.dto.LoginDTO;
 import com.nufemit.model.dto.ProfileDTO;
 import com.nufemit.model.dto.ResponseDTO;
+import com.nufemit.repository.FollowerRepository;
 import com.nufemit.repository.RatingRepository;
 import com.nufemit.repository.UserRepository;
 import lombok.AllArgsConstructor;
@@ -15,6 +17,7 @@ import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityNotFoundException;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static com.nufemit.utils.CredentialsUtils.createToken;
 import static com.nufemit.utils.CredentialsUtils.encrypt;
@@ -27,6 +30,7 @@ public class UserService {
 
     private UserRepository userRepository;
     private RatingRepository ratingRepository;
+    private FollowerRepository followerRepository;
 
     public List<User> getUsers(String searchBox) {
         if (searchBox == null || searchBox.isBlank()) {
@@ -65,15 +69,37 @@ public class UserService {
         return TRUE;
     }
 
+    public Boolean followUser(Long id, User follower) {
+        userRepository.findById(id)
+            .ifPresent(followed -> followerRepository.findByFollowerAndFollowed(follower, followed)
+                .ifPresentOrElse(followObj -> log.info("User {} is already following User {}", followObj.getFollower().getId(), followObj.getFollowed().getId()),
+                    () -> followerRepository.save(Follower.builder().follower(follower).followed(followed).build())));
+        return TRUE;
+    }
+
+    public List<User> getFollowers(User user) {
+        return followerRepository.findByFollowed(user).stream()
+            .map(Follower::getFollower)
+            .collect(Collectors.toList());
+    }
+
+    public List<User> getFollowing(User user) {
+        return followerRepository.findByFollower(user).stream()
+            .map(Follower::getFollowed)
+            .collect(Collectors.toList());
+    }
+
     private ProfileDTO mapToProfile(User user) {
         return ProfileDTO.builder()
             .user(user)
-            .rating(calculateRating(user.getId()))
+            .rating(calculateRating(user))
+            .followers(followerRepository.countByFollowed(user))
+            .following(followerRepository.countByFollower(user))
             .build();
     }
 
-    private Double calculateRating(Long id) {
-        return ratingRepository.findByReviewed(id).stream()
+    private Double calculateRating(User user) {
+        return ratingRepository.findByReviewed(user).stream()
             .mapToDouble(Rating::getRating)
             .average()
             .orElse(-1);

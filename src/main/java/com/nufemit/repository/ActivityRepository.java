@@ -4,11 +4,13 @@ import com.nufemit.model.Activity;
 import com.nufemit.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
+@Repository
 public interface ActivityRepository extends JpaRepository<Activity, Long> {
     @Query("SELECT a FROM Activity a WHERE a.dateTime >= ?1 and" +
         " (a.title like CONCAT('%', ?2, '%') or" +
