@@ -1,5 +1,6 @@
 package com.nufemit.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -13,6 +14,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import java.time.LocalDateTime;
 
 @Getter
 @Setter
@@ -20,7 +22,7 @@ import javax.persistence.ManyToOne;
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
-public class Follower {
+public class Message {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -28,10 +30,15 @@ public class Follower {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "follower", nullable = false)
-    private User follower;
+    @JoinColumn(name = "sender", nullable = false)
+    private User sender;
 
     @ManyToOne
-    @JoinColumn(name = "followed", nullable = false)
-    private User followed;
+    @JoinColumn(name = "conversation", nullable = false)
+    @JsonIgnore
+    private Conversation conversation;
+
+    private String message;
+    private LocalDateTime dateTime;
+    private Boolean unread;
 }
