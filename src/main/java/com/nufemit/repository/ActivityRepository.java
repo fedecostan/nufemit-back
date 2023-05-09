@@ -20,6 +20,8 @@ public interface ActivityRepository extends JpaRepository<Activity, Long> {
 
     List<Activity> findTop25ByDateTimeGreaterThanEqualOrderByDateTimeDesc(LocalDateTime now);
 
+    List<Activity> findTop5ByParticipantsContainsAndDateTimeLessThanOrderByDateTimeDesc(User user, LocalDateTime now);
+
     Optional<Activity> findByIdAndDateTimeGreaterThanEqual(Long activityId, LocalDateTime now);
 
     Optional<Activity> findByIdAndCreatorAndDateTimeGreaterThanEqual(Long id, User user, LocalDateTime now);

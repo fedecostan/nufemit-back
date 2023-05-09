@@ -13,6 +13,7 @@ import com.nufemit.repository.RatingRepository;
 import com.nufemit.repository.UserRepository;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityNotFoundException;
@@ -36,12 +37,12 @@ public class UserService {
         if (searchBox == null || searchBox.isBlank()) {
             return userRepository.findTop25By();
         }
-        return userRepository.findBySearchBox(searchBox, searchBox, searchBox, searchBox);
+        return userRepository.findTop25BySearchBox(searchBox, searchBox, searchBox, searchBox, PageRequest.of(0, 25));
     }
 
-    public ProfileDTO getUsersById(Long id) {
+    public ProfileDTO getUsersById(Long id, User user) {
         return userRepository.findById(id)
-            .map(this::mapToProfile)
+            .map(userFetched -> mapToProfile(userFetched, user))
             .orElseThrow(EntityNotFoundException::new);
     }
 
@@ -77,10 +78,25 @@ public class UserService {
         return TRUE;
     }
 
+    public Boolean unfollowUser(Long id, User follower) {
+        userRepository.findById(id)
+            .flatMap(followed -> followerRepository.findByFollowerAndFollowed(follower, followed))
+            .ifPresent(followObj -> followerRepository.delete(followObj));
+        return TRUE;
+    }
+
     public List<User> getFollowers(User user) {
         return followerRepository.findByFollowed(user).stream()
             .map(Follower::getFollower)
             .collect(Collectors.toList());
+    }
+
+    public List<User> getFollowersForUser(Long id) {
+        return userRepository.findById(id)
+            .map(user -> followerRepository.findByFollowed(user).stream()
+                .map(Follower::getFollower)
+                .collect(Collectors.toList()))
+            .orElseThrow(EntityNotFoundException::new);
     }
 
     public List<User> getFollowing(User user) {
@@ -89,12 +105,23 @@ public class UserService {
             .collect(Collectors.toList());
     }
 
-    private ProfileDTO mapToProfile(User user) {
+    public List<User> getFollowingForUser(Long id) {
+        return userRepository.findById(id)
+            .map(user -> followerRepository.findByFollower(user).stream()
+                .map(Follower::getFollowed)
+                .collect(Collectors.toList()))
+            .orElseThrow(EntityNotFoundException::new);
+    }
+
+    private ProfileDTO mapToProfile(User userFetched, User user) {
         return ProfileDTO.builder()
-            .user(user)
-            .rating(calculateRating(user))
-            .followers(followerRepository.countByFollowed(user))
-            .following(followerRepository.countByFollower(user))
+            .user(userFetched)
+            .rating(calculateRating(userFetched))
+            .followers(followerRepository.countByFollowed(userFetched))
+            .following(followerRepository.countByFollower(userFetched))
+            .followedByUser(followerRepository.findByFollowed(userFetched).stream()
+                .anyMatch(follower -> follower.getFollower().equals(user)))
+            .activities(userFetched.getActivitiesJoined().size())
             .build();
     }
 

@@ -41,12 +41,26 @@ public class UserController {
         return createOkResponse(userService.getUsers(searchBox), credentialsInfo);
     }
 
+    @GetMapping("/id")
+    public ResponseEntity<ResponseDTO> getUser(@RequestHeader(HttpHeaders.AUTHORIZATION) String token) {
+        Credentials credentialsInfo = authenticationService.getCredentials(token);
+        if (!credentialsInfo.isAccess()) return new ResponseEntity<>(null, HttpStatus.UNAUTHORIZED);
+        return createOkResponse(credentialsInfo.getUser().getId(), credentialsInfo);
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<ResponseDTO> getUserById(@RequestHeader(HttpHeaders.AUTHORIZATION) String token,
                                                    @PathVariable Long id) {
         Credentials credentialsInfo = authenticationService.getCredentials(token);
         if (!credentialsInfo.isAccess()) return new ResponseEntity<>(null, HttpStatus.UNAUTHORIZED);
-        return createOkResponse(userService.getUsersById(id), credentialsInfo);
+        return createOkResponse(userService.getUsersById(id, credentialsInfo.getUser()), credentialsInfo);
+    }
+
+    @GetMapping("/self")
+    public ResponseEntity<ResponseDTO> getLoggedUser(@RequestHeader(HttpHeaders.AUTHORIZATION) String token) {
+        Credentials credentialsInfo = authenticationService.getCredentials(token);
+        if (!credentialsInfo.isAccess()) return new ResponseEntity<>(null, HttpStatus.UNAUTHORIZED);
+        return createOkResponse(userService.getUsersById(credentialsInfo.getUser().getId(), credentialsInfo.getUser()), credentialsInfo);
     }
 
     @GetMapping("/followers")
@@ -56,11 +70,27 @@ public class UserController {
         return createOkResponse(userService.getFollowers(credentialsInfo.getUser()), credentialsInfo);
     }
 
+    @GetMapping("/followers/{id}")
+    public ResponseEntity<ResponseDTO> getFollowersForUser(@RequestHeader(HttpHeaders.AUTHORIZATION) String token,
+                                                           @PathVariable Long id) {
+        Credentials credentialsInfo = authenticationService.getCredentials(token);
+        if (!credentialsInfo.isAccess()) return new ResponseEntity<>(null, HttpStatus.UNAUTHORIZED);
+        return createOkResponse(userService.getFollowersForUser(id), credentialsInfo);
+    }
+
     @GetMapping("/following")
     public ResponseEntity<ResponseDTO> getFollowings(@RequestHeader(HttpHeaders.AUTHORIZATION) String token) {
         Credentials credentialsInfo = authenticationService.getCredentials(token);
         if (!credentialsInfo.isAccess()) return new ResponseEntity<>(null, HttpStatus.UNAUTHORIZED);
         return createOkResponse(userService.getFollowing(credentialsInfo.getUser()), credentialsInfo);
+    }
+
+    @GetMapping("/following/{id}")
+    public ResponseEntity<ResponseDTO> getFollowings(@RequestHeader(HttpHeaders.AUTHORIZATION) String token,
+                                                     @PathVariable Long id) {
+        Credentials credentialsInfo = authenticationService.getCredentials(token);
+        if (!credentialsInfo.isAccess()) return new ResponseEntity<>(null, HttpStatus.UNAUTHORIZED);
+        return createOkResponse(userService.getFollowingForUser(id), credentialsInfo);
     }
 
     @PostMapping
@@ -79,6 +109,14 @@ public class UserController {
         Credentials credentialsInfo = authenticationService.getCredentials(token);
         if (!credentialsInfo.isAccess()) return new ResponseEntity<>(null, HttpStatus.UNAUTHORIZED);
         return createOkResponse(userService.followUser(id, credentialsInfo.getUser()), credentialsInfo);
+    }
+
+    @PutMapping("/unfollow/{id}")
+    public ResponseEntity<ResponseDTO> unfollowUser(@RequestHeader(HttpHeaders.AUTHORIZATION) String token,
+                                                    @PathVariable Long id) {
+        Credentials credentialsInfo = authenticationService.getCredentials(token);
+        if (!credentialsInfo.isAccess()) return new ResponseEntity<>(null, HttpStatus.UNAUTHORIZED);
+        return createOkResponse(userService.unfollowUser(id, credentialsInfo.getUser()), credentialsInfo);
     }
 
     @DeleteMapping

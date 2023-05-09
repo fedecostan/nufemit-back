@@ -44,7 +44,22 @@ public class ActivityController {
                                                        @PathVariable Long id) {
         Credentials credentialsInfo = authenticationService.getCredentials(token);
         if (!credentialsInfo.isAccess()) return new ResponseEntity<>(null, HttpStatus.UNAUTHORIZED);
-        return createOkResponse(activityService.getActivitiesById(id), credentialsInfo);
+        return createOkResponse(activityService.getActivitiesById(id, credentialsInfo.getUser()), credentialsInfo);
+    }
+
+    @GetMapping("/recent")
+    public ResponseEntity<ResponseDTO> getRecentActivities(@RequestHeader(HttpHeaders.AUTHORIZATION) String token) {
+        Credentials credentialsInfo = authenticationService.getCredentials(token);
+        if (!credentialsInfo.isAccess()) return new ResponseEntity<>(null, HttpStatus.UNAUTHORIZED);
+        return createOkResponse(activityService.getRecentActivities(credentialsInfo.getUser()), credentialsInfo);
+    }
+
+    @GetMapping("/recent/{id}")
+    public ResponseEntity<ResponseDTO> getRecentActivitiesForUser(@RequestHeader(HttpHeaders.AUTHORIZATION) String token,
+                                                                  @PathVariable Long id) {
+        Credentials credentialsInfo = authenticationService.getCredentials(token);
+        if (!credentialsInfo.isAccess()) return new ResponseEntity<>(null, HttpStatus.UNAUTHORIZED);
+        return createOkResponse(activityService.getRecentActivitiesForUser(id), credentialsInfo);
     }
 
     @PostMapping

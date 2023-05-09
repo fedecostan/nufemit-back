@@ -5,6 +5,7 @@ import com.nufemit.model.Message;
 import com.nufemit.model.User;
 import com.nufemit.model.dto.ConversationDTO;
 import com.nufemit.model.dto.MessageDTO;
+import com.nufemit.model.dto.NewMessageDTO;
 import com.nufemit.repository.ConversationRepository;
 import com.nufemit.repository.MessageRepository;
 import com.nufemit.repository.UserRepository;
@@ -14,6 +15,7 @@ import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityNotFoundException;
 import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -34,25 +36,29 @@ public class MessageService {
             .map(conversation -> messageRepository.findTop1ByConversationOrderByDateTimeDesc(conversation)
                 .map(lastMessage -> ConversationDTO.builder()
                     .conversationId(conversation.getId())
+                    .userId(conversation.getParticipant1().equals(user) ?
+                        conversation.getParticipant2().getId() : conversation.getParticipant1().getId())
                     .conversationUser(conversation.getParticipant1().equals(user) ?
-                        conversation.getParticipant2().getName() : conversation.getParticipant1().getName())
+                        conversation.getParticipant2().getShortName() : conversation.getParticipant1().getShortName())
                     .lastMessage(lastMessage.getMessage())
                     .unread(lastMessage.getSender() != user && lastMessage.getUnread())
                     .date(lastMessage.getDateTime())
                     .build())
                 .orElse(null))
+            .collect(Collectors.toList()).stream()
+            .sorted(Comparator.comparing(ConversationDTO::getDate).reversed())
             .collect(Collectors.toList());
     }
 
-    public List<Message> getMessages(Long id, User user) {
+    public List<MessageDTO> getMessages(Long id, User user) {
         return conversationRepository.findById(id)
             .map(conversation -> getMessages(conversation, user))
             .orElseThrow(EntityNotFoundException::new);
     }
 
-    public Boolean sendMessage(MessageDTO messageDTO, User user) {
-        userRepository.findById(messageDTO.getReceiverId())
-            .map(receiver -> verifyExistingConversation(messageDTO, user, receiver))
+    public Boolean sendMessage(NewMessageDTO newMessageDTO, User user) {
+        userRepository.findById(newMessageDTO.getReceiverId())
+            .map(receiver -> verifyExistingConversation(newMessageDTO, user, receiver))
             .orElseThrow(EntityNotFoundException::new);
         return TRUE;
     }
@@ -63,10 +69,20 @@ public class MessageService {
         return TRUE;
     }
 
-    private List<Message> getMessages(Conversation conversation, User user) {
+    private List<MessageDTO> getMessages(Conversation conversation, User user) {
         messageRepository.findByConversationAndUnreadAndSenderNot(conversation, TRUE, user)
             .forEach(this::markMessageAsRead);
-        return messageRepository.findByConversationOrderByDateTimeDesc(conversation);
+        return messageRepository.findByConversationOrderByDateTimeAsc(conversation).stream()
+            .map(message -> mapToMessageDTO(message, user))
+            .collect(Collectors.toList());
+    }
+
+    private MessageDTO mapToMessageDTO(Message message, User user) {
+        return MessageDTO.builder()
+            .message(message.getMessage())
+            .dateTime(message.getDateTime())
+            .flow(message.getSender().equals(user) ? "O" : "I")
+            .build();
     }
 
     private void markMessageAsRead(Message message) {
@@ -74,20 +90,20 @@ public class MessageService {
         messageRepository.save(message);
     }
 
-    private Boolean verifyExistingConversation(MessageDTO messageDTO, User sender, User receiver) {
+    private Boolean verifyExistingConversation(NewMessageDTO newMessageDTO, User sender, User receiver) {
         return conversationRepository.findByParticipant1AndParticipant2(sender, receiver)
-            .map(conversation -> createMessage(conversation, messageDTO, sender))
+            .map(conversation -> createMessage(conversation, newMessageDTO, sender))
             .orElseGet(() -> conversationRepository.findByParticipant1AndParticipant2(receiver, sender)
-                .map(conversation -> createMessage(conversation, messageDTO, sender))
+                .map(conversation -> createMessage(conversation, newMessageDTO, sender))
                 .orElseGet(() -> createMessage(conversationRepository.save(Conversation.builder()
                     .participant1(sender)
                     .participant2(receiver)
-                    .build()), messageDTO, sender)));
+                    .build()), newMessageDTO, sender)));
     }
 
-    private Boolean createMessage(Conversation conversation, MessageDTO messageDTO, User sender) {
+    private Boolean createMessage(Conversation conversation, NewMessageDTO newMessageDTO, User sender) {
         messageRepository.save(Message.builder()
-            .message(messageDTO.getMessage())
+            .message(newMessageDTO.getMessage())
             .conversation(conversation)
             .sender(sender)
             .dateTime(LocalDateTime.now())

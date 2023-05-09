@@ -2,7 +2,9 @@ package com.nufemit.service;
 
 import com.nufemit.model.Activity;
 import com.nufemit.model.User;
+import com.nufemit.model.dto.ActivityDTO;
 import com.nufemit.repository.ActivityRepository;
+import com.nufemit.repository.UserRepository;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -19,6 +21,7 @@ import static java.lang.Boolean.TRUE;
 public class ActivityService {
 
     private ActivityRepository activityRepository;
+    private UserRepository userRepository;
 
     public Boolean createActivity(Activity activity, User user) {
         activity.setCreator(user);
@@ -34,8 +37,19 @@ public class ActivityService {
         return activityRepository.findBySearchBox(LocalDateTime.now(), searchBox, searchBox, searchBox);
     }
 
-    public Activity getActivitiesById(Long id) {
+    public List<Activity> getRecentActivities(User user) {
+        return activityRepository.findTop5ByParticipantsContainsAndDateTimeLessThanOrderByDateTimeDesc(user, LocalDateTime.now());
+    }
+
+    public List<Activity> getRecentActivitiesForUser(Long id) {
+        return userRepository.findById(id)
+            .map(user -> activityRepository.findTop5ByParticipantsContainsAndDateTimeLessThanOrderByDateTimeDesc(user, LocalDateTime.now()))
+            .orElseThrow(EntityNotFoundException::new);
+    }
+
+    public ActivityDTO getActivitiesById(Long id, User user) {
         return activityRepository.findById(id)
+            .map(activity -> mapToActivityDTO(activity, user))
             .orElseThrow(EntityNotFoundException::new);
     }
 
@@ -49,5 +63,22 @@ public class ActivityService {
         activityRepository.delete(activity);
         log.info("ACTIVITY {} deleted", activity.getId());
         return TRUE;
+    }
+
+    private ActivityDTO mapToActivityDTO(Activity activity, User user) {
+        return ActivityDTO.builder()
+            .id(activity.getId())
+            .title(activity.getTitle())
+            .shortDescription(activity.getDescription().length() > 160 ?
+                activity.getDescription().substring(0, 157).concat("...") :
+                activity.getDescription())
+            .description(activity.getDescription())
+            .place(activity.getPlace())
+            .dateTime(activity.getDateTime())
+            .price(activity.getPrice())
+            .joined(activity.getParticipants().contains(user))
+            .limit(activity.getMaxParticipants())
+            .joiners(activity.getParticipants())
+            .build();
     }
 }

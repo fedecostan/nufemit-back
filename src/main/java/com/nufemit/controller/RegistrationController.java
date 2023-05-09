@@ -26,19 +26,19 @@ public class RegistrationController {
     private RegistrationService registrationService;
     private AuthenticationService authenticationService;
 
-    @PutMapping("/register/{activityId}/{userId}")
+    @PutMapping("/register/{activityId}")
     public ResponseEntity<ResponseDTO> registerUser(@RequestHeader(HttpHeaders.AUTHORIZATION) String token,
-                                                    @PathVariable Long activityId, @PathVariable Long userId) {
+                                                    @PathVariable Long activityId) {
         Credentials credentialsInfo = authenticationService.getCredentials(token);
         if (!credentialsInfo.isAccess()) return new ResponseEntity<>(null, HttpStatus.UNAUTHORIZED);
-        return createOkResponse(registrationService.registerUser(activityId, userId), credentialsInfo);
+        return createOkResponse(registrationService.registerUser(activityId, credentialsInfo.getUser()), credentialsInfo);
     }
 
-    @PutMapping("/unregister/{activityId}/{userId}")
+    @PutMapping("/unregister/{activityId}")
     public ResponseEntity<ResponseDTO> unregisterUser(@RequestHeader(HttpHeaders.AUTHORIZATION) String token,
-                                                      @PathVariable Long activityId, @PathVariable Long userId) {
+                                                      @PathVariable Long activityId) {
         Credentials credentialsInfo = authenticationService.getCredentials(token);
         if (!credentialsInfo.isAccess()) return new ResponseEntity<>(null, HttpStatus.UNAUTHORIZED);
-        return createOkResponse(registrationService.unregisterUser(activityId, userId), credentialsInfo);
+        return createOkResponse(registrationService.unregisterUser(activityId, credentialsInfo.getUser()), credentialsInfo);
     }
 }
