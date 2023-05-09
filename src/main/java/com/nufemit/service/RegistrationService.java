@@ -32,6 +32,11 @@ public class RegistrationService {
             .orElseThrow(EntityNotFoundException::new);
     }
 
+    public void unregisterUserFromAllActivities(User user) {
+        activityRepository.findByParticipantsContains(user)
+            .forEach(activity -> removeUserFromActivity(activity, user));
+    }
+
     private Boolean addUserToActivity(Activity activity, User user) {
         if (activity.getParticipants().contains(user)) {
             log.warn("User {} already registered for the activity {}", user.getId(), activity.getId());

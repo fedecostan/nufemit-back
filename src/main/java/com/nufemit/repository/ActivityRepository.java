@@ -25,4 +25,8 @@ public interface ActivityRepository extends JpaRepository<Activity, Long> {
     Optional<Activity> findByIdAndDateTimeGreaterThanEqual(Long activityId, LocalDateTime now);
 
     Optional<Activity> findByIdAndCreatorAndDateTimeGreaterThanEqual(Long id, User user, LocalDateTime now);
+
+    List<Activity> findByParticipantsContains(User user);
+
+    void deleteAllByCreator(User user);
 }

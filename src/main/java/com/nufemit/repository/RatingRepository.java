@@ -16,4 +16,6 @@ public interface RatingRepository extends JpaRepository<Rating, Long> {
     Optional<Rating> findByIdAndReviewer(Long id, User user);
 
     List<Rating> findByReviewed(User user);
+
+    void deleteAllByReviewerOrReviewed(User user, User user1);
 }

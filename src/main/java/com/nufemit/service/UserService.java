@@ -15,6 +15,7 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityNotFoundException;
 import java.util.List;
@@ -32,6 +33,9 @@ public class UserService {
     private UserRepository userRepository;
     private RatingRepository ratingRepository;
     private FollowerRepository followerRepository;
+    private RegistrationService registrationService;
+    private ActivityService activityService;
+    private MessageService messageService;
 
     public List<User> getUsers(String searchBox) {
         if (searchBox == null || searchBox.isBlank()) {
@@ -64,8 +68,14 @@ public class UserService {
             .orElseThrow(AuthenticationException::new);
     }
 
+    @Transactional
     public Boolean deleteUser(User user) {
-        userRepository.deleteById(user.getId());
+        registrationService.unregisterUserFromAllActivities(user);
+        activityService.deleteAllActivitiesForCreator(user);
+        messageService.deleteAllConversationsForUser(user);
+        followerRepository.deleteAllByFollowerOrFollowed(user, user);
+        ratingRepository.deleteAllByReviewerOrReviewed(user, user);
+        userRepository.delete(user);
         log.info("USER {} deleted", user.getId());
         return TRUE;
     }

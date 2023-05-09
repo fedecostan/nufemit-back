@@ -19,4 +19,6 @@ public interface MessageRepository extends JpaRepository<Message, Long> {
     Optional<Message> findByIdAndSender(Long id, User user);
 
     List<Message> findByConversationAndUnreadAndSenderNot(Conversation conversation, Boolean unread, User user);
+
+    void deleteAllByConversation(Conversation conversation);
 }

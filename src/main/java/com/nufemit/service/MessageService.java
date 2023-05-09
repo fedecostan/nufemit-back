@@ -69,6 +69,14 @@ public class MessageService {
         return TRUE;
     }
 
+    public void deleteAllConversationsForUser(User user) {
+        conversationRepository.findByParticipant1OrParticipant2(user, user)
+            .forEach(conversation -> {
+                messageRepository.deleteAllByConversation(conversation);
+                conversationRepository.delete(conversation);
+            });
+    }
+
     private List<MessageDTO> getMessages(Conversation conversation, User user) {
         messageRepository.findByConversationAndUnreadAndSenderNot(conversation, TRUE, user)
             .forEach(this::markMessageAsRead);

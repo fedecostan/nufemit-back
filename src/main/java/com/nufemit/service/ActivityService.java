@@ -59,6 +59,10 @@ public class ActivityService {
             .orElseThrow(EntityNotFoundException::new);
     }
 
+    public void deleteAllActivitiesForCreator(User user) {
+        activityRepository.deleteAllByCreator(user);
+    }
+
     private Boolean deleteActivity(Activity activity) {
         activityRepository.delete(activity);
         log.info("ACTIVITY {} deleted", activity.getId());
