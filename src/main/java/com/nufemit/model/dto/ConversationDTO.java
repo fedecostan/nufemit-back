@@ -9,6 +9,7 @@ import java.time.LocalDateTime;
 @Builder
 public class ConversationDTO {
     private Long conversationId;
+    private Long userId;
     private String conversationUser;
     private String lastMessage;
     private Boolean unread;

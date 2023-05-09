@@ -35,6 +35,7 @@ public class Activity {
     private Long id;
 
     private String title;
+    @Column(length = 1024)
     private String description;
     private String place;
     private LocalDateTime dateTime;

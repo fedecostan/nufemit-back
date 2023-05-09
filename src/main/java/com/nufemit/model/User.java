@@ -35,6 +35,7 @@ public class User {
     private String name;
     private String lastname;
     private String secondLastname;
+    private String location;
     @Column(nullable = false, unique = true, length = 50)
     private String email;
     @ManyToMany(mappedBy = "participants")
@@ -48,4 +49,12 @@ public class User {
     @OneToMany(mappedBy = "creator")
     @JsonIgnore
     private List<Activity> activitiesCreated;
+
+    public String getFullName() {
+        return name + " " + lastname + ' ' + secondLastname;
+    }
+
+    public String getShortName() {
+        return name + " " + lastname;
+    }
 }

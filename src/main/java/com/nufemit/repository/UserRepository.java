@@ -1,6 +1,7 @@
 package com.nufemit.repository;
 
 import com.nufemit.model.User;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -16,7 +17,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
         " u.lastname like CONCAT('%', ?2, '%') or" +
         " u.secondLastname like CONCAT('%', ?3, '%') or" +
         " u.email like CONCAT('%', ?4, '%')")
-    List<User> findBySearchBox(String name, String lastname, String secondLastname, String email);
+    List<User> findTop25BySearchBox(String name, String lastname, String secondLastname, String email, Pageable pageable);
 
     List<User> findTop25By();
 

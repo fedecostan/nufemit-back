@@ -1,7 +1,7 @@
 package com.nufemit.controller;
 
 import com.nufemit.model.Credentials;
-import com.nufemit.model.dto.MessageDTO;
+import com.nufemit.model.dto.NewMessageDTO;
 import com.nufemit.model.dto.ResponseDTO;
 import com.nufemit.service.AuthenticationService;
 import com.nufemit.service.MessageService;
@@ -46,10 +46,10 @@ public class MessageController {
 
     @PostMapping
     public ResponseEntity<ResponseDTO> send(@RequestHeader(HttpHeaders.AUTHORIZATION) String token,
-                                            @RequestBody MessageDTO messageDTO) {
+                                            @RequestBody NewMessageDTO newMessageDTO) {
         Credentials credentialsInfo = authenticationService.getCredentials(token);
         if (!credentialsInfo.isAccess()) return new ResponseEntity<>(null, HttpStatus.UNAUTHORIZED);
-        return HttpResponseUtils.createOkResponse(messageService.sendMessage(messageDTO, credentialsInfo.getUser()), credentialsInfo);
+        return HttpResponseUtils.createOkResponse(messageService.sendMessage(newMessageDTO, credentialsInfo.getUser()), credentialsInfo);
     }
 
     @DeleteMapping("/{id}")

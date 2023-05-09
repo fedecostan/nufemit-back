@@ -14,7 +14,7 @@ public interface MessageRepository extends JpaRepository<Message, Long> {
 
     Optional<Message> findTop1ByConversationOrderByDateTimeDesc(Conversation conversation);
 
-    List<Message> findByConversationOrderByDateTimeDesc(Conversation conversation);
+    List<Message> findByConversationOrderByDateTimeAsc(Conversation conversation);
 
     Optional<Message> findByIdAndSender(Long id, User user);
 
