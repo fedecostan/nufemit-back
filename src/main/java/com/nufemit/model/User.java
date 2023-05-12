@@ -49,6 +49,7 @@ public class User {
     @OneToMany(mappedBy = "creator")
     @JsonIgnore
     private List<Activity> activitiesCreated;
+    private String profileImage;
 
     public String getFullName() {
         return name + " " + lastname + ' ' + secondLastname;

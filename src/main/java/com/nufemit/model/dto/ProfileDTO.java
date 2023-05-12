@@ -8,6 +8,7 @@ import lombok.Data;
 @Builder
 public class ProfileDTO {
     private User user;
+    private String fullName;
     private Integer activities;
     private Integer followers;
     private Integer following;

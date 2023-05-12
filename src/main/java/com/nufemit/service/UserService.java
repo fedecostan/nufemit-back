@@ -126,6 +126,7 @@ public class UserService {
     private ProfileDTO mapToProfile(User userFetched, User user) {
         return ProfileDTO.builder()
             .user(userFetched)
+            .fullName(userFetched.getFullName())
             .rating(calculateRating(userFetched))
             .followers(followerRepository.countByFollowed(userFetched))
             .following(followerRepository.countByFollower(userFetched))

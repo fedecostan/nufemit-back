@@ -30,4 +30,9 @@ public class CustomRestExceptionHandler extends ResponseEntityExceptionHandler {
     public ResponseEntity<String> handleUniqueRatingException() {
         return new ResponseEntity<>("You can only review the same user once", HttpStatus.PRECONDITION_FAILED);
     }
+
+    @ExceptionHandler({S3Exception.class})
+    public ResponseEntity<String> handleS3Exception() {
+        return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
+    }
 }
