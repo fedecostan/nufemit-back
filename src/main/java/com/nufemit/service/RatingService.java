@@ -23,9 +23,17 @@ public class RatingService {
     private RatingRepository ratingRepository;
 
     public Boolean createRating(RatingDTO ratingDTO, User reviewer) {
+        log.info("Create rating");
         return userRepository.findById(ratingDTO.getId())
             .map(reviewed -> verifyExistingRating(ratingDTO, reviewer, reviewed))
             .orElseThrow(EntityNotFoundException::new);
+    }
+
+    public Boolean deleteRating(Long id, User user) {
+        ratingRepository.findByIdAndReviewer(id, user)
+            .ifPresent(rating -> ratingRepository.delete(rating));
+        log.info("RATING {} deleted", id);
+        return TRUE;
     }
 
     private Boolean verifyExistingRating(RatingDTO ratingDTO, User reviewer, User reviewed) {
@@ -46,13 +54,6 @@ public class RatingService {
             .reviewed(reviewed)
             .comment(ratingDTO.getComment())
             .build());
-        return TRUE;
-    }
-
-    public Boolean deleteRating(Long id, User user) {
-        ratingRepository.findByIdAndReviewer(id, user)
-            .ifPresent(rating -> ratingRepository.delete(rating));
-        log.info("RATING {} deleted", id);
         return TRUE;
     }
 }

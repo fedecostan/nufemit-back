@@ -32,6 +32,7 @@ public class MessageService {
     private UserRepository userRepository;
 
     public List<ConversationDTO> getConversations(User user) {
+        log.info("Fetching conversation of user {}", user.getId());
         return conversationRepository.findByParticipant1OrParticipant2(user, user).stream()
             .map(conversation -> messageRepository.findTop1ByConversationOrderByDateTimeDesc(conversation)
                 .map(lastMessage -> ConversationDTO.builder()
@@ -51,12 +52,14 @@ public class MessageService {
     }
 
     public List<MessageDTO> getMessages(Long id, User user) {
+        log.info("Fetching messages of conversation {}", id);
         return conversationRepository.findById(id)
             .map(conversation -> getMessages(conversation, user))
             .orElseThrow(EntityNotFoundException::new);
     }
 
     public Boolean sendMessage(NewMessageDTO newMessageDTO, User user) {
+        log.info("Sending message");
         userRepository.findById(newMessageDTO.getReceiverId())
             .map(receiver -> verifyExistingConversation(newMessageDTO, user, receiver))
             .orElseThrow(EntityNotFoundException::new);
@@ -64,12 +67,14 @@ public class MessageService {
     }
 
     public Boolean deleteMessage(Long id, User user) {
+        log.info("Deleting message {}", id);
         messageRepository.findByIdAndSender(id, user)
             .ifPresent(message -> messageRepository.delete(message));
         return TRUE;
     }
 
     public void deleteAllConversationsForUser(User user) {
+        log.info("Deleting all conversations from user {}", user.getId());
         conversationRepository.findByParticipant1OrParticipant2(user, user)
             .forEach(conversation -> {
                 messageRepository.deleteAllByConversation(conversation);

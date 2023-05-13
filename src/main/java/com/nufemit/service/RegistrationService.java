@@ -21,18 +21,21 @@ public class RegistrationService {
     private ActivityRepository activityRepository;
 
     public Boolean registerUser(Long activityId, User user) {
+        log.info("Registering user {} to activity {}", user.getId(), activityId);
         return activityRepository.findByIdAndDateTimeGreaterThanEqual(activityId, LocalDateTime.now())
             .map(activity -> addUserToActivity(activity, user))
             .orElseThrow(EntityNotFoundException::new);
     }
 
     public Boolean unregisterUser(Long activityId, User user) {
+        log.info("Unregistering user {} to activity {}", user.getId(), activityId);
         return activityRepository.findByIdAndDateTimeGreaterThanEqual(activityId, LocalDateTime.now())
             .map(activity -> removeUserFromActivity(activity, user))
             .orElseThrow(EntityNotFoundException::new);
     }
 
     public void unregisterUserFromAllActivities(User user) {
+        log.info("Unregistering user {} from all activities", user.getId());
         activityRepository.findByParticipantsContains(user)
             .forEach(activity -> removeUserFromActivity(activity, user));
     }

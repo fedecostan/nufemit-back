@@ -31,6 +31,7 @@ public class ActivityService {
     }
 
     public List<Activity> getActivities(String searchBox) {
+        log.info("Fetching activities");
         if (searchBox == null || searchBox.isBlank()) {
             return activityRepository.findTop25ByDateTimeGreaterThanEqualOrderByDateTimeDesc(LocalDateTime.now());
         }
@@ -38,28 +39,33 @@ public class ActivityService {
     }
 
     public List<Activity> getRecentActivities(User user) {
+        log.info("Fetching recent activities");
         return activityRepository.findTop5ByParticipantsContainsAndDateTimeLessThanOrderByDateTimeDesc(user, LocalDateTime.now());
     }
 
     public List<Activity> getRecentActivitiesForUser(Long id) {
+        log.info("Fetching recent activities");
         return userRepository.findById(id)
             .map(user -> activityRepository.findTop5ByParticipantsContainsAndDateTimeLessThanOrderByDateTimeDesc(user, LocalDateTime.now()))
             .orElseThrow(EntityNotFoundException::new);
     }
 
     public ActivityDTO getActivitiesById(Long id, User user) {
+        log.info("Fetching activity by id {}", id);
         return activityRepository.findById(id)
             .map(activity -> mapToActivityDTO(activity, user))
             .orElseThrow(EntityNotFoundException::new);
     }
 
     public Boolean deleteActivity(Long id, User user) {
+        log.info("Deleting activity by id {}", id);
         return activityRepository.findByIdAndCreatorAndDateTimeGreaterThanEqual(id, user, LocalDateTime.now())
             .map(this::deleteActivity)
             .orElseThrow(EntityNotFoundException::new);
     }
 
     public void deleteAllActivitiesForCreator(User user) {
+        log.info("Deleting all activities for creator id {}", user.getId());
         activityRepository.deleteAllByCreator(user);
     }
 

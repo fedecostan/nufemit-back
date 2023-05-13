@@ -36,6 +36,7 @@ public class S3Service {
     }
 
     public Boolean uploadFile(MultipartFile file, String filename) {
+        log.info("Sending file to S3: {}", filename);
         try {
             ObjectMetadata data = new ObjectMetadata();
             data.setContentType(file.getContentType());
@@ -43,14 +44,14 @@ public class S3Service {
             amazonS3.putObject(bucketName, filename, file.getInputStream(), data);
             return TRUE;
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error(e.getMessage());
         }
         throw new S3Exception();
     }
 
     public ResponseEntity<ByteArrayResource> getFile(String filename) {
+        log.info("Fetching file in S3: {}", filename);
         try {
-            log.info("FETCHING FILE: {}", filename);
             S3Object s3Object = amazonS3.getObject(bucketName, filename);
             ByteArrayResource resource = new ByteArrayResource(s3Object.getObjectContent().readAllBytes());
             HttpHeaders headers = new HttpHeaders();
@@ -58,8 +59,10 @@ public class S3Service {
             headers.setContentLength(s3Object.getObjectMetadata().getContentLength());
             return new ResponseEntity<>(resource, headers, HttpStatus.OK);
         } catch (IOException e) {
+            log.error(e.getMessage());
             throw new S3Exception();
         } catch (AmazonS3Exception e) {
+            log.error(e.getMessage());
             throw new EntityNotFoundException();
         }
     }
