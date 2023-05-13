@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestPart;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -28,7 +28,7 @@ public class S3Controller {
     private S3Service s3Service;
 
     @PostMapping("/{filename}")
-    public ResponseEntity<Boolean> uploadFile(@RequestPart("file") MultipartFile file,
+    public ResponseEntity<Boolean> uploadFile(@RequestParam("file") MultipartFile file,
                                               @PathVariable String filename) {
         return ResponseEntity.ok(s3Service.uploadFile(file, filename));
     }
