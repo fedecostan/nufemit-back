@@ -10,6 +10,7 @@ import java.time.LocalDateTime;
 public class ConversationDTO {
     private Long conversationId;
     private Long userId;
+    private String userProfileImage;
     private String conversationUser;
     private String lastMessage;
     private Boolean unread;

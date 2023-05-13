@@ -31,20 +31,25 @@ public class MessageService {
     private ConversationRepository conversationRepository;
     private UserRepository userRepository;
 
+    private static ConversationDTO createConversation(User user, Conversation conversation, Message lastMessage) {
+        User otherUser = conversation.getParticipant1().equals(user) ?
+            conversation.getParticipant2() : conversation.getParticipant1();
+        return ConversationDTO.builder()
+            .conversationId(conversation.getId())
+            .userId(otherUser.getId())
+            .userProfileImage(otherUser.getProfileImage())
+            .conversationUser(otherUser.getShortName())
+            .lastMessage(lastMessage.getMessage())
+            .unread(lastMessage.getSender() != user && lastMessage.getUnread())
+            .date(lastMessage.getDateTime())
+            .build();
+    }
+
     public List<ConversationDTO> getConversations(User user) {
         log.info("Fetching conversation of user {}", user.getId());
         return conversationRepository.findByParticipant1OrParticipant2(user, user).stream()
             .map(conversation -> messageRepository.findTop1ByConversationOrderByDateTimeDesc(conversation)
-                .map(lastMessage -> ConversationDTO.builder()
-                    .conversationId(conversation.getId())
-                    .userId(conversation.getParticipant1().equals(user) ?
-                        conversation.getParticipant2().getId() : conversation.getParticipant1().getId())
-                    .conversationUser(conversation.getParticipant1().equals(user) ?
-                        conversation.getParticipant2().getShortName() : conversation.getParticipant1().getShortName())
-                    .lastMessage(lastMessage.getMessage())
-                    .unread(lastMessage.getSender() != user && lastMessage.getUnread())
-                    .date(lastMessage.getDateTime())
-                    .build())
+                .map(lastMessage -> createConversation(user, conversation, lastMessage))
                 .orElse(null))
             .collect(Collectors.toList()).stream()
             .sorted(Comparator.comparing(ConversationDTO::getDate).reversed())
