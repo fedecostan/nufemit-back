@@ -41,6 +41,7 @@ public class Activity {
     private LocalDateTime dateTime;
     private Integer maxParticipants;
     private Double price;
+    private String activityImage;
 
     @ManyToOne
     @JoinColumn(name = "creator", nullable = false)

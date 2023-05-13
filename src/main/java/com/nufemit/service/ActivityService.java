@@ -89,6 +89,7 @@ public class ActivityService {
             .joined(activity.getParticipants().contains(user))
             .limit(activity.getMaxParticipants())
             .joiners(activity.getParticipants())
+            .activityImage(activity.getActivityImage())
             .build();
     }
 }

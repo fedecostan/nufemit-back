@@ -19,5 +19,6 @@ public class ActivityDTO {
     private Double price;
     private Boolean joined;
     private Integer limit;
+    private String activityImage;
     private List<User> joiners;
 }
