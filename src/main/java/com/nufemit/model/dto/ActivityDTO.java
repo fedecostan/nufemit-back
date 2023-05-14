@@ -21,4 +21,6 @@ public class ActivityDTO {
     private Integer limit;
     private String activityImage;
     private List<User> joiners;
+    private User creator;
+    private Boolean completed;
 }

@@ -16,6 +16,7 @@ public class HttpResponseUtils {
                     credentialsInfo.getUser().getId(),
                     credentialsInfo.getUser().getEmail(),
                     credentialsInfo.getUser().getPassword()))
+                .loggedId(credentialsInfo.getUser().getId())
                 .build());
     }
 }

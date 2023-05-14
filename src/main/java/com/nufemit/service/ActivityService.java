@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import javax.persistence.EntityNotFoundException;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static java.lang.Boolean.TRUE;
 
@@ -23,19 +24,26 @@ public class ActivityService {
     private ActivityRepository activityRepository;
     private UserRepository userRepository;
 
+    private static ActivityDTO mapToSimpleActivityDTO(Activity activity) {
+        return ActivityDTO.builder()
+            .title(activity.getTitle())
+            .activityImage(activity.getActivityImage())
+            .description(activity.getDescription())
+            .place(activity.getPlace())
+            .dateTime(activity.getDateTime())
+            .id(activity.getId())
+            .completed(activity.getParticipants().size() == activity.getMaxParticipants())
+            .build();
+    }
+
     public Boolean createActivity(Activity activity, User user) {
         activity.setCreator(user);
+        if (activity.getMaxParticipants() == null) activity.setMaxParticipants(0);
+        if (activity.getDateTime() == null) activity.setDateTime(LocalDateTime.now());
+        if (activity.getPrice() == null) activity.setPrice(0d);
         Activity newActivity = activityRepository.save(activity);
         log.info("New ACTIVITY created: {}", newActivity.getId());
         return TRUE;
-    }
-
-    public List<Activity> getActivities(String searchBox) {
-        log.info("Fetching activities");
-        if (searchBox == null || searchBox.isBlank()) {
-            return activityRepository.findTop25ByDateTimeGreaterThanEqualOrderByDateTimeDesc(LocalDateTime.now());
-        }
-        return activityRepository.findBySearchBox(LocalDateTime.now(), searchBox, searchBox, searchBox);
     }
 
     public List<Activity> getRecentActivities(User user) {
@@ -75,6 +83,18 @@ public class ActivityService {
         return TRUE;
     }
 
+    public List<ActivityDTO> getActivities(String searchBox) {
+        log.info("Fetching activities");
+        if (searchBox == null || searchBox.isBlank()) {
+            return activityRepository.findTop25ByDateTimeGreaterThanEqualOrderByDateTimeDesc(LocalDateTime.now()).stream()
+                .map(ActivityService::mapToSimpleActivityDTO)
+                .collect(Collectors.toList());
+        }
+        return activityRepository.findBySearchBox(LocalDateTime.now(), searchBox, searchBox, searchBox).stream()
+            .map(ActivityService::mapToSimpleActivityDTO)
+            .collect(Collectors.toList());
+    }
+
     private ActivityDTO mapToActivityDTO(Activity activity, User user) {
         return ActivityDTO.builder()
             .id(activity.getId())
@@ -90,6 +110,7 @@ public class ActivityService {
             .limit(activity.getMaxParticipants())
             .joiners(activity.getParticipants())
             .activityImage(activity.getActivityImage())
+            .creator(activity.getCreator())
             .build();
     }
 }
