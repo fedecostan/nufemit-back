@@ -123,6 +123,35 @@ public class UserService {
             .orElseThrow(EntityNotFoundException::new);
     }
 
+    public Boolean updateUser(User user, Long id) {
+        return userRepository.findById(id)
+            .map(userDB -> saveUpdates(userDB, user))
+            .orElseThrow(EntityNotFoundException::new);
+    }
+
+    public Boolean updateUserImage(User user, Long id) {
+        return userRepository.findById(id)
+            .map(userDB -> saveNewImage(userDB, user))
+            .orElseThrow(EntityNotFoundException::new);
+    }
+
+    private Boolean saveNewImage(User userDB, User user) {
+        userDB.setProfileImage(user.getProfileImage());
+        userRepository.save(userDB);
+        return TRUE;
+    }
+
+    private Boolean saveUpdates(User userDB, User user) {
+        userDB.setName(user.getName());
+        userDB.setLastname(user.getLastname());
+        userDB.setSecondLastname(user.getSecondLastname());
+        userDB.setPhone(user.getPhone());
+        userDB.setLocation(user.getLocation());
+        userDB.setBirthDate(user.getBirthDate());
+        userRepository.save(userDB);
+        return TRUE;
+    }
+
     private ProfileDTO mapToProfile(User userFetched, User user) {
         return ProfileDTO.builder()
             .user(userFetched)

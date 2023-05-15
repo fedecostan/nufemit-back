@@ -30,4 +30,6 @@ public interface ActivityRepository extends JpaRepository<Activity, Long> {
     List<Activity> findByParticipantsContains(User user);
 
     void deleteAllByCreator(User user);
+
+    Optional<Activity> findTop1ByDateTimeGreaterThanEqualAndParticipantsContainsOrderByDateTimeAsc(LocalDateTime now, User user);
 }

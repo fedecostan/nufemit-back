@@ -93,6 +93,22 @@ public class UserController {
         return createOkResponse(userService.getFollowingForUser(id), credentialsInfo);
     }
 
+    @PutMapping
+    public ResponseEntity<ResponseDTO> updateUser(@RequestHeader(HttpHeaders.AUTHORIZATION) String token,
+                                                  @RequestBody User user) {
+        Credentials credentialsInfo = authenticationService.getCredentials(token);
+        if (!credentialsInfo.isAccess()) return new ResponseEntity<>(null, HttpStatus.UNAUTHORIZED);
+        return createOkResponse(userService.updateUser(user, credentialsInfo.getUser().getId()), credentialsInfo);
+    }
+
+    @PutMapping("/image")
+    public ResponseEntity<ResponseDTO> Image(@RequestHeader(HttpHeaders.AUTHORIZATION) String token,
+                                             @RequestBody User user) {
+        Credentials credentialsInfo = authenticationService.getCredentials(token);
+        if (!credentialsInfo.isAccess()) return new ResponseEntity<>(null, HttpStatus.UNAUTHORIZED);
+        return createOkResponse(userService.updateUserImage(user, credentialsInfo.getUser().getId()), credentialsInfo);
+    }
+
     @PostMapping
     public ResponseEntity<Boolean> create(@RequestBody User user) {
         return ResponseEntity.ok(userService.createUser(user));

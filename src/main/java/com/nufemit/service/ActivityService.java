@@ -77,12 +77,6 @@ public class ActivityService {
         activityRepository.deleteAllByCreator(user);
     }
 
-    private Boolean deleteActivity(Activity activity) {
-        activityRepository.delete(activity);
-        log.info("ACTIVITY {} deleted", activity.getId());
-        return TRUE;
-    }
-
     public List<ActivityDTO> getActivities(String searchBox) {
         log.info("Fetching activities");
         if (searchBox == null || searchBox.isBlank()) {
@@ -93,6 +87,20 @@ public class ActivityService {
         return activityRepository.findBySearchBox(LocalDateTime.now(), searchBox, searchBox, searchBox).stream()
             .map(ActivityService::mapToSimpleActivityDTO)
             .collect(Collectors.toList());
+    }
+
+    public ActivityDTO getUserNextActivity(User user) {
+        log.info("Fetching user next activity");
+        return activityRepository
+            .findTop1ByDateTimeGreaterThanEqualAndParticipantsContainsOrderByDateTimeAsc(LocalDateTime.now(), user)
+            .map(ActivityService::mapToSimpleActivityDTO)
+            .orElseThrow(EntityNotFoundException::new);
+    }
+
+    private Boolean deleteActivity(Activity activity) {
+        activityRepository.delete(activity);
+        log.info("ACTIVITY {} deleted", activity.getId());
+        return TRUE;
     }
 
     private ActivityDTO mapToActivityDTO(Activity activity, User user) {

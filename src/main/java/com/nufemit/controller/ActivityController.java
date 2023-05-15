@@ -39,6 +39,13 @@ public class ActivityController {
         return createOkResponse(activityService.getActivities(searchBox), credentialsInfo);
     }
 
+    @GetMapping("/next")
+    public ResponseEntity<ResponseDTO> getUserNextActivity(@RequestHeader(HttpHeaders.AUTHORIZATION) String token) {
+        Credentials credentialsInfo = authenticationService.getCredentials(token);
+        if (!credentialsInfo.isAccess()) return new ResponseEntity<>(null, HttpStatus.UNAUTHORIZED);
+        return createOkResponse(activityService.getUserNextActivity(credentialsInfo.getUser()), credentialsInfo);
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<ResponseDTO> getActivityById(@RequestHeader(HttpHeaders.AUTHORIZATION) String token,
                                                        @PathVariable Long id) {
