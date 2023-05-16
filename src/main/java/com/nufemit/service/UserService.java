@@ -5,6 +5,7 @@ import com.nufemit.exception.DuplicateInformationException;
 import com.nufemit.model.Follower;
 import com.nufemit.model.Rating;
 import com.nufemit.model.User;
+import com.nufemit.model.dto.InputValidationDTO;
 import com.nufemit.model.dto.LoginDTO;
 import com.nufemit.model.dto.ProfileDTO;
 import com.nufemit.model.dto.ResponseDTO;
@@ -19,6 +20,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityNotFoundException;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static com.nufemit.utils.CredentialsUtils.createToken;
@@ -50,15 +53,18 @@ public class UserService {
             .orElseThrow(EntityNotFoundException::new);
     }
 
-    public Boolean createUser(User user) {
-        user.setPassword(encrypt(user.getPassword()));
-        try {
-            userRepository.save(user);
-            log.info("New USER created: {}", user.getId());
-        } catch (Exception e) {
-            throw new DuplicateInformationException();
+    public InputValidationDTO createUser(User user) {
+        InputValidationDTO inputValidationDTO = validateInputs(user);
+        if (inputValidationDTO.getErroredFields().isEmpty()) {
+            user.setPassword(encrypt(user.getPassword()));
+            try {
+                userRepository.save(user);
+                log.info("New USER created: {}", user.getId());
+            } catch (Exception e) {
+                throw new DuplicateInformationException();
+            }
         }
-        return TRUE;
+        return inputValidationDTO;
     }
 
     public ResponseDTO loginUser(LoginDTO loginDTO) {
@@ -123,10 +129,20 @@ public class UserService {
             .orElseThrow(EntityNotFoundException::new);
     }
 
-    public Boolean updateUser(User user, Long id) {
-        return userRepository.findById(id)
-            .map(userDB -> saveUpdates(userDB, user))
-            .orElseThrow(EntityNotFoundException::new);
+    public InputValidationDTO updateUser(User updatedUser, User user) {
+        updatedUser.setEmail("email@placeholder.com");
+        updatedUser.setPassword("passwordPlaceholder");
+        InputValidationDTO inputValidationDTO = validateInputs(updatedUser);
+        if (inputValidationDTO.getErroredFields().isEmpty()) {
+            user.setName(updatedUser.getName());
+            user.setLastname(updatedUser.getLastname());
+            user.setSecondLastname(updatedUser.getSecondLastname());
+            user.setPhone(updatedUser.getPhone());
+            user.setLocation(updatedUser.getLocation());
+            user.setBirthDate(updatedUser.getBirthDate());
+            userRepository.save(user);
+        }
+        return inputValidationDTO;
     }
 
     public Boolean updateUserImage(User user, Long id) {
@@ -137,17 +153,6 @@ public class UserService {
 
     private Boolean saveNewImage(User userDB, User user) {
         userDB.setProfileImage(user.getProfileImage());
-        userRepository.save(userDB);
-        return TRUE;
-    }
-
-    private Boolean saveUpdates(User userDB, User user) {
-        userDB.setName(user.getName());
-        userDB.setLastname(user.getLastname());
-        userDB.setSecondLastname(user.getSecondLastname());
-        userDB.setPhone(user.getPhone());
-        userDB.setLocation(user.getLocation());
-        userDB.setBirthDate(user.getBirthDate());
         userRepository.save(userDB);
         return TRUE;
     }
@@ -170,5 +175,23 @@ public class UserService {
             .mapToDouble(Rating::getRating)
             .average()
             .orElse(-1);
+    }
+
+    private InputValidationDTO validateInputs(User user) {
+        InputValidationDTO inputValidationDTO = new InputValidationDTO();
+        Matcher matcher = Pattern.compile("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$").matcher(user.getEmail());
+        if (user.getEmail().isBlank() || !matcher.matches()) {
+            inputValidationDTO.addError("EMAIL", "You must enter a valid email");
+        }
+        if (user.getPassword().isBlank() || user.getPassword().length() < 8) {
+            inputValidationDTO.addError("PASSWORD", "Password must have 8 or more letters");
+        }
+        if (user.getName().isBlank() || user.getName().length() < 3) {
+            inputValidationDTO.addError("NAME", "Name must have 3 or more letters");
+        }
+        if (user.getLastname().isBlank() || user.getLastname().length() < 3) {
+            inputValidationDTO.addError("LASTNAME", "Lastname must have 3 or more letters");
+        }
+        return inputValidationDTO;
     }
 }

@@ -3,6 +3,7 @@ package com.nufemit.service;
 import com.nufemit.model.Activity;
 import com.nufemit.model.User;
 import com.nufemit.model.dto.ActivityDTO;
+import com.nufemit.model.dto.InputValidationDTO;
 import com.nufemit.repository.ActivityRepository;
 import com.nufemit.repository.UserRepository;
 import lombok.AllArgsConstructor;
@@ -36,14 +37,17 @@ public class ActivityService {
             .build();
     }
 
-    public Boolean createActivity(Activity activity, User user) {
-        activity.setCreator(user);
-        if (activity.getMaxParticipants() == null) activity.setMaxParticipants(0);
-        if (activity.getDateTime() == null) activity.setDateTime(LocalDateTime.now());
-        if (activity.getPrice() == null) activity.setPrice(0d);
-        Activity newActivity = activityRepository.save(activity);
-        log.info("New ACTIVITY created: {}", newActivity.getId());
-        return TRUE;
+    public InputValidationDTO createActivity(Activity activity, User user) {
+        InputValidationDTO inputValidationDTO = validateInputs(activity);
+        if (inputValidationDTO.getErroredFields().isEmpty()) {
+            activity.setCreator(user);
+            if (activity.getMaxParticipants() == null || activity.getMaxParticipants() == 0)
+                activity.setMaxParticipants(10000);
+            if (activity.getPrice() == null) activity.setPrice(0d);
+            Activity newActivity = activityRepository.save(activity);
+            log.info("New ACTIVITY created: {}", newActivity.getId());
+        }
+        return inputValidationDTO;
     }
 
     public List<Activity> getRecentActivities(User user) {
@@ -120,5 +124,19 @@ public class ActivityService {
             .activityImage(activity.getActivityImage())
             .creator(activity.getCreator())
             .build();
+    }
+
+    private InputValidationDTO validateInputs(Activity activity) {
+        InputValidationDTO inputValidationDTO = new InputValidationDTO();
+        if (activity.getTitle().isBlank() || activity.getTitle().length() < 3) {
+            inputValidationDTO.addError("TITLE", "Title must have 3 or more letters");
+        }
+        if (activity.getPlace().isBlank() || activity.getPlace().length() < 3) {
+            inputValidationDTO.addError("PLACE", "Place must have 3 or more letters");
+        }
+        if (activity.getDateTime() == null || activity.getDateTime().isBefore(LocalDateTime.now())) {
+            inputValidationDTO.addError("DATE", "Date must be set in the future");
+        }
+        return inputValidationDTO;
     }
 }

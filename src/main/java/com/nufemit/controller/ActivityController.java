@@ -2,6 +2,7 @@ package com.nufemit.controller;
 
 import com.nufemit.model.Activity;
 import com.nufemit.model.Credentials;
+import com.nufemit.model.dto.InputValidationDTO;
 import com.nufemit.model.dto.ResponseDTO;
 import com.nufemit.service.ActivityService;
 import com.nufemit.service.AuthenticationService;
@@ -20,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import static com.nufemit.utils.CredentialsUtils.createToken;
 import static com.nufemit.utils.HttpResponseUtils.createOkResponse;
 
 @RestController
@@ -74,7 +76,19 @@ public class ActivityController {
                                               @RequestBody Activity activity) {
         Credentials credentialsInfo = authenticationService.getCredentials(token);
         if (!credentialsInfo.isAccess()) return new ResponseEntity<>(null, HttpStatus.UNAUTHORIZED);
-        return createOkResponse(activityService.createActivity(activity, credentialsInfo.getUser()), credentialsInfo);
+        InputValidationDTO inputValidationDTO = activityService.createActivity(activity, credentialsInfo.getUser());
+        if (inputValidationDTO.getErroredFields().isEmpty()) {
+            return createOkResponse(inputValidationDTO, credentialsInfo);
+        } else {
+            return new ResponseEntity<>(ResponseDTO.builder()
+                .response(inputValidationDTO)
+                .token(createToken(
+                    credentialsInfo.getUser().getId(),
+                    credentialsInfo.getUser().getEmail(),
+                    credentialsInfo.getUser().getPassword()))
+                .loggedId(credentialsInfo.getUser().getId())
+                .build(), HttpStatus.PRECONDITION_FAILED);
+        }
     }
 
     @DeleteMapping("/{id}")

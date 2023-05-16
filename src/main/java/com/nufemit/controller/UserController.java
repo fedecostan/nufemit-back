@@ -2,6 +2,7 @@ package com.nufemit.controller;
 
 import com.nufemit.model.Credentials;
 import com.nufemit.model.User;
+import com.nufemit.model.dto.InputValidationDTO;
 import com.nufemit.model.dto.LoginDTO;
 import com.nufemit.model.dto.ResponseDTO;
 import com.nufemit.service.AuthenticationService;
@@ -22,6 +23,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import static com.nufemit.utils.CredentialsUtils.createToken;
 import static com.nufemit.utils.HttpResponseUtils.createOkResponse;
 
 @RestController
@@ -98,20 +100,37 @@ public class UserController {
                                                   @RequestBody User user) {
         Credentials credentialsInfo = authenticationService.getCredentials(token);
         if (!credentialsInfo.isAccess()) return new ResponseEntity<>(null, HttpStatus.UNAUTHORIZED);
-        return createOkResponse(userService.updateUser(user, credentialsInfo.getUser().getId()), credentialsInfo);
+        InputValidationDTO inputValidationDTO = userService.updateUser(user, credentialsInfo.getUser());
+        if (inputValidationDTO.getErroredFields().isEmpty()) {
+            return createOkResponse(inputValidationDTO, credentialsInfo);
+        } else {
+            return new ResponseEntity<>(ResponseDTO.builder()
+                .response(inputValidationDTO)
+                .token(createToken(
+                    credentialsInfo.getUser().getId(),
+                    credentialsInfo.getUser().getEmail(),
+                    credentialsInfo.getUser().getPassword()))
+                .loggedId(credentialsInfo.getUser().getId())
+                .build(), HttpStatus.PRECONDITION_FAILED);
+        }
     }
 
     @PutMapping("/image")
-    public ResponseEntity<ResponseDTO> Image(@RequestHeader(HttpHeaders.AUTHORIZATION) String token,
-                                             @RequestBody User user) {
+    public ResponseEntity<ResponseDTO> updateImage(@RequestHeader(HttpHeaders.AUTHORIZATION) String token,
+                                                   @RequestBody User user) {
         Credentials credentialsInfo = authenticationService.getCredentials(token);
         if (!credentialsInfo.isAccess()) return new ResponseEntity<>(null, HttpStatus.UNAUTHORIZED);
         return createOkResponse(userService.updateUserImage(user, credentialsInfo.getUser().getId()), credentialsInfo);
     }
 
     @PostMapping
-    public ResponseEntity<Boolean> create(@RequestBody User user) {
-        return ResponseEntity.ok(userService.createUser(user));
+    public ResponseEntity<InputValidationDTO> create(@RequestBody User user) {
+        InputValidationDTO inputValidationDTO = userService.createUser(user);
+        if (inputValidationDTO.getErroredFields().isEmpty()) {
+            return ResponseEntity.ok(inputValidationDTO);
+        } else {
+            return new ResponseEntity<>(inputValidationDTO, HttpStatus.PRECONDITION_FAILED);
+        }
     }
 
     @PostMapping("/login")
