@@ -1,6 +1,6 @@
 # NUFEMIT-BACK
 
-This is a Spring Boot application developed using Java 11. It serves as a starting point for building Java-based web applications with Spring Boot framework.
+This is the backend application in charge of managing all NUFEMIT application functionality exposing all endpoints and database administration.
 
 ## Prerequisites
 
@@ -8,6 +8,7 @@ Before running this application, ensure that the following prerequisites are met
 
 - Java Development Kit (JDK) 11 or higher is installed.
 - Maven build tool is installed.
+- MySQL database configured
 
 ## Getting Started
 
