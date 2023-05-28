@@ -6,6 +6,8 @@ import com.nufemit.model.dto.ResponseDTO;
 import com.nufemit.service.AuthenticationService;
 import com.nufemit.service.MessageService;
 import com.nufemit.utils.HttpResponseUtils;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
@@ -22,6 +24,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/messages")
+@Tag(description = "Message related actions", name = "Message Controller")
 @AllArgsConstructor
 @Slf4j
 public class MessageController {
@@ -29,6 +32,7 @@ public class MessageController {
     private MessageService messageService;
     private AuthenticationService authenticationService;
 
+    @Operation(summary = "Get all Conversations for logged user")
     @GetMapping
     public ResponseEntity<ResponseDTO> getConversations(@RequestHeader(HttpHeaders.AUTHORIZATION) String token) {
         Credentials credentialsInfo = authenticationService.getCredentials(token);
@@ -36,6 +40,7 @@ public class MessageController {
         return HttpResponseUtils.createOkResponse(messageService.getConversations(credentialsInfo.getUser()), credentialsInfo);
     }
 
+    @Operation(summary = "Get Messages for given Conversation")
     @GetMapping("/{id}")
     public ResponseEntity<ResponseDTO> getMessages(@RequestHeader(HttpHeaders.AUTHORIZATION) String token,
                                                    @PathVariable Long id) {
@@ -44,6 +49,7 @@ public class MessageController {
         return HttpResponseUtils.createOkResponse(messageService.getMessages(id, credentialsInfo.getUser()), credentialsInfo);
     }
 
+    @Operation(summary = "Save new Message sent")
     @PostMapping
     public ResponseEntity<ResponseDTO> send(@RequestHeader(HttpHeaders.AUTHORIZATION) String token,
                                             @RequestBody NewMessageDTO newMessageDTO) {
@@ -52,6 +58,7 @@ public class MessageController {
         return HttpResponseUtils.createOkResponse(messageService.sendMessage(newMessageDTO, credentialsInfo.getUser()), credentialsInfo);
     }
 
+    @Operation(summary = "Delete Message by id")
     @DeleteMapping("/{id}")
     public ResponseEntity<ResponseDTO> delete(@RequestHeader(HttpHeaders.AUTHORIZATION) String token,
                                               @PathVariable Long id) {

@@ -31,20 +31,6 @@ public class MessageService {
     private ConversationRepository conversationRepository;
     private UserRepository userRepository;
 
-    private static ConversationDTO createConversation(User user, Conversation conversation, Message lastMessage) {
-        User otherUser = conversation.getParticipant1().equals(user) ?
-            conversation.getParticipant2() : conversation.getParticipant1();
-        return ConversationDTO.builder()
-            .conversationId(conversation.getId())
-            .userId(otherUser.getId())
-            .userProfileImage(otherUser.getProfileImage())
-            .conversationUser(otherUser.getShortName())
-            .lastMessage(lastMessage.getMessage())
-            .unread(lastMessage.getSender() != user && lastMessage.getUnread())
-            .date(lastMessage.getDateTime())
-            .build();
-    }
-
     public List<ConversationDTO> getConversations(User user) {
         log.info("Fetching conversation of user {}", user.getId());
         return conversationRepository.findByParticipant1OrParticipant2(user, user).stream()
@@ -128,5 +114,19 @@ public class MessageService {
             .unread(TRUE)
             .build());
         return TRUE;
+    }
+
+    private static ConversationDTO createConversation(User user, Conversation conversation, Message lastMessage) {
+        User otherUser = conversation.getParticipant1().equals(user) ?
+            conversation.getParticipant2() : conversation.getParticipant1();
+        return ConversationDTO.builder()
+            .conversationId(conversation.getId())
+            .userId(otherUser.getId())
+            .userProfileImage(otherUser.getProfileImage())
+            .conversationUser(otherUser.getShortName())
+            .lastMessage(lastMessage.getMessage())
+            .unread(lastMessage.getSender() != user && lastMessage.getUnread())
+            .date(lastMessage.getDateTime())
+            .build();
     }
 }

@@ -25,18 +25,6 @@ public class ActivityService {
     private ActivityRepository activityRepository;
     private UserRepository userRepository;
 
-    private static ActivityDTO mapToSimpleActivityDTO(Activity activity) {
-        return ActivityDTO.builder()
-            .title(activity.getTitle())
-            .activityImage(activity.getActivityImage())
-            .description(activity.getDescription())
-            .place(activity.getPlace())
-            .dateTime(activity.getDateTime())
-            .id(activity.getId())
-            .completed(activity.getParticipants().size() == activity.getMaxParticipants())
-            .build();
-    }
-
     public InputValidationDTO createActivity(Activity activity, User user) {
         InputValidationDTO inputValidationDTO = validateInputs(activity);
         if (inputValidationDTO.getErroredFields().isEmpty()) {
@@ -138,5 +126,17 @@ public class ActivityService {
             inputValidationDTO.addError("DATE", "Date must be set in the future");
         }
         return inputValidationDTO;
+    }
+
+    private static ActivityDTO mapToSimpleActivityDTO(Activity activity) {
+        return ActivityDTO.builder()
+            .title(activity.getTitle())
+            .activityImage(activity.getActivityImage())
+            .description(activity.getDescription())
+            .place(activity.getPlace())
+            .dateTime(activity.getDateTime())
+            .id(activity.getId())
+            .completed(activity.getParticipants().size() == activity.getMaxParticipants())
+            .build();
     }
 }

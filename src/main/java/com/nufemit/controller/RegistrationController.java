@@ -4,6 +4,8 @@ import com.nufemit.model.Credentials;
 import com.nufemit.model.dto.ResponseDTO;
 import com.nufemit.service.AuthenticationService;
 import com.nufemit.service.RegistrationService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
@@ -19,6 +21,7 @@ import static com.nufemit.utils.HttpResponseUtils.createOkResponse;
 
 @RestController
 @RequestMapping("/registration")
+@Tag(description = "Registration related actions", name = "Registration Controller")
 @AllArgsConstructor
 @Slf4j
 public class RegistrationController {
@@ -26,6 +29,7 @@ public class RegistrationController {
     private RegistrationService registrationService;
     private AuthenticationService authenticationService;
 
+    @Operation(summary = "Register logged User in given Activity")
     @PutMapping("/register/{activityId}")
     public ResponseEntity<ResponseDTO> registerUser(@RequestHeader(HttpHeaders.AUTHORIZATION) String token,
                                                     @PathVariable Long activityId) {
@@ -34,6 +38,7 @@ public class RegistrationController {
         return createOkResponse(registrationService.registerUser(activityId, credentialsInfo.getUser()), credentialsInfo);
     }
 
+    @Operation(summary = "Unregister logged User in given Activity")
     @PutMapping("/unregister/{activityId}")
     public ResponseEntity<ResponseDTO> unregisterUser(@RequestHeader(HttpHeaders.AUTHORIZATION) String token,
                                                       @PathVariable Long activityId) {

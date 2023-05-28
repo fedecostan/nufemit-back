@@ -33,7 +33,6 @@ public class CredentialsUtils {
     }
 
     public static String createToken(Long id, String email, String password) {
-        System.out.println(LocalDateTime.now().plusHours(1));
         return JWT.create()
             .withHeader(Map.of("typ", "JWT", "alg", "HS256"))
             .withClaim(ID, id)

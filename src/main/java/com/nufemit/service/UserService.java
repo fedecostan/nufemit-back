@@ -41,6 +41,7 @@ public class UserService {
     private MessageService messageService;
 
     public List<User> getUsers(String searchBox) {
+        log.info("Fetching users");
         if (searchBox == null || searchBox.isBlank()) {
             return userRepository.findTop25By();
         }
@@ -48,6 +49,7 @@ public class UserService {
     }
 
     public ProfileDTO getUsersById(Long id, User user) {
+        log.info("Fetching user by id {}", id);
         return userRepository.findById(id)
             .map(userFetched -> mapToProfile(userFetched, user))
             .orElseThrow(EntityNotFoundException::new);
@@ -68,6 +70,7 @@ public class UserService {
     }
 
     public ResponseDTO loginUser(LoginDTO loginDTO) {
+        log.info("Validating login credentials");
         return userRepository.findByEmailAndPassword(loginDTO.getEmail(), encrypt(loginDTO.getPassword()))
             .map(user -> createToken(user.getId(), user.getEmail(), user.getPassword()))
             .map(token -> ResponseDTO.builder().token(token).build())
@@ -87,6 +90,7 @@ public class UserService {
     }
 
     public Boolean followUser(Long id, User follower) {
+        log.info("User {} follows user {}", follower.getId(), id);
         userRepository.findById(id)
             .ifPresent(followed -> followerRepository.findByFollowerAndFollowed(follower, followed)
                 .ifPresentOrElse(followObj -> log.info("User {} is already following User {}", followObj.getFollower().getId(), followObj.getFollowed().getId()),
@@ -95,6 +99,7 @@ public class UserService {
     }
 
     public Boolean unfollowUser(Long id, User follower) {
+        log.info("User {} unfollows user {}", follower.getId(), id);
         userRepository.findById(id)
             .flatMap(followed -> followerRepository.findByFollowerAndFollowed(follower, followed))
             .ifPresent(followObj -> followerRepository.delete(followObj));
@@ -102,12 +107,14 @@ public class UserService {
     }
 
     public List<User> getFollowers(User user) {
+        log.info("Fetching followers for user {}", user.getId());
         return followerRepository.findByFollowed(user).stream()
             .map(Follower::getFollower)
             .collect(Collectors.toList());
     }
 
     public List<User> getFollowersForUser(Long id) {
+        log.info("Fetching followers for user {}", id);
         return userRepository.findById(id)
             .map(user -> followerRepository.findByFollowed(user).stream()
                 .map(Follower::getFollower)
@@ -116,12 +123,14 @@ public class UserService {
     }
 
     public List<User> getFollowing(User user) {
+        log.info("Fetching followings for user {}", user.getId());
         return followerRepository.findByFollower(user).stream()
             .map(Follower::getFollowed)
             .collect(Collectors.toList());
     }
 
     public List<User> getFollowingForUser(Long id) {
+        log.info("Fetching followings for user {}", id);
         return userRepository.findById(id)
             .map(user -> followerRepository.findByFollower(user).stream()
                 .map(Follower::getFollowed)
@@ -130,6 +139,7 @@ public class UserService {
     }
 
     public InputValidationDTO updateUser(User updatedUser, User user) {
+        log.info("Updating user {} information", user.getId());
         updatedUser.setEmail("email@placeholder.com");
         updatedUser.setPassword("passwordPlaceholder");
         InputValidationDTO inputValidationDTO = validateInputs(updatedUser);
@@ -146,6 +156,7 @@ public class UserService {
     }
 
     public Boolean updateUserImage(User user, Long id) {
+        log.info("Updating user {} profile image", user.getId());
         return userRepository.findById(id)
             .map(userDB -> saveNewImage(userDB, user))
             .orElseThrow(EntityNotFoundException::new);
